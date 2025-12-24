@@ -2,7 +2,6 @@ import 'package:example/models/task.dart';
 import 'package:flutter/material.dart';
 import 'package:reactive_orm/reactive_orm.dart';
 
-
 /// -------------------
 /// Models
 /// -------------------
@@ -54,7 +53,6 @@ class MyApp extends StatelessWidget {
           padding: const EdgeInsets.all(12.0),
           child: Column(
             children: [
-
               /// 1️⃣ Single Task with status
               ReactiveBuilder<Task>(
                 model: task1,
@@ -112,7 +110,9 @@ class MyApp extends StatelessWidget {
             FloatingActionButton(
               heroTag: "add",
               onPressed: () {
-                final newTask = Task(title: "New Task ${taskList.items.length + 1}");
+                final newTask = Task(
+                  title: "New Task ${taskList.items.length + 1}",
+                );
                 taskList.add(newTask);
               },
               tooltip: "Add Task",
@@ -135,11 +135,6 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-
-
-
-
 
 ///Try Version
 // import 'package:example/models/task.dart';
@@ -288,11 +283,6 @@ class MyApp extends StatelessWidget {
 //     );
 //   }
 // }
-
-
-
-
-
 
 ///Version 0.0.1
 // import 'package:example/models/task.dart';

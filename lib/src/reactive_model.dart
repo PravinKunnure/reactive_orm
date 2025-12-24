@@ -35,9 +35,6 @@ class ReactiveModel {
   }
 }
 
-
-
-
 ///Try Version
 // import 'dart:async';
 // import 'dart:ui';
@@ -72,7 +69,6 @@ class ReactiveModel {
 //     }
 //   }
 // }
-
 
 ///Version 0.0.1
 // import 'dart:async';

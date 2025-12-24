@@ -17,7 +17,8 @@ class ReactiveBuilder<T extends ReactiveModel> extends StatefulWidget {
   ReactiveBuilderState<T> createState() => ReactiveBuilderState<T>();
 }
 
-class ReactiveBuilderState<T extends ReactiveModel> extends State<ReactiveBuilder<T>> {
+class ReactiveBuilderState<T extends ReactiveModel>
+    extends State<ReactiveBuilder<T>> {
   void _onChange() => setState(() {});
 
   @override
@@ -47,9 +48,6 @@ class ReactiveBuilderState<T extends ReactiveModel> extends State<ReactiveBuilde
   @override
   Widget build(BuildContext context) => widget.builder(widget.model);
 }
-
-
-
 
 ///Try Version
 // import 'package:flutter/material.dart';
@@ -103,9 +101,6 @@ class ReactiveBuilderState<T extends ReactiveModel> extends State<ReactiveBuilde
 //     return widget.builder(widget.model);
 //   }
 // }
-
-
-
 
 ///Version 0.0.1
 /*

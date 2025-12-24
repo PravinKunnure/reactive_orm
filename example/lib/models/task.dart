@@ -5,8 +5,8 @@ class Task extends ReactiveModel {
   bool _completed;
 
   Task({required String title, bool completed = false})
-      : _title = title,
-        _completed = completed;
+    : _title = title,
+      _completed = completed;
 
   String get title => _title;
   set title(String val) {
@@ -34,8 +34,6 @@ class Task extends ReactiveModel {
     }
   }
 }
-
-
 
 ///Try Version
 // import 'package:reactive_orm/reactive_orm.dart';
@@ -65,8 +63,6 @@ class Task extends ReactiveModel {
 //     }
 //   }
 // }
-
-
 
 ///Version 0.0.1
 // import 'package:reactive_orm/reactive_orm.dart';
