@@ -21,6 +21,16 @@ This package focuses on:
 
 ---
 
+| Feature                    | `ValueNotifier`                | `reactive_orm`                               |
+| -------------------------- | ------------------------------ | -------------------------------------------- |
+| Observes a single field?   | Yes, one notifier per field    | No, whole object is reactive                 |
+| Field assignment syntax    | `notifier.value = newValue`    | `model.field = newValue`                     |
+| Multiple widgets listening | Manual setup for each notifier | Automatic for same model instance            |
+| Boilerplate                | More for complex models        | Minimal, ORM-style                           |
+| Ideal for                  | Simple single values           | Complex models with multiple reactive fields |
+
+
+
 ## 🚀 Getting Started
 
 ### Installation
