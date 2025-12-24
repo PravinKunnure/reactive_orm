@@ -1,327 +1,268 @@
-import 'package:example/models/task.dart';
 import 'package:flutter/material.dart';
 import 'package:reactive_orm/reactive_orm.dart';
 
 /// -------------------
-/// Models
+/// Task Model
 /// -------------------
+class Task extends ReactiveModel {
+  String _title;
+  bool _completed = false;
+  String _status = "Idle";
 
-class ReactiveTaskList extends ReactiveModel {
-  final List<Task> items = [];
+  Task({required String title}) : _title = title;
 
-  void add(Task task) {
-    items.add(task);
-    addNested(task); // listen to task changes
-    task.status = "Task Added ➕";
-    notifyListeners();
+  String get title => _title;
+  set title(String value) {
+    if (_title != value) {
+      _title = value;
+      notifyListeners('title');
+    }
   }
 
-  void remove(Task task) {
-    items.remove(task);
-    task.status = "Task Removed ❌";
-    notifyListeners();
+  bool get completed => _completed;
+  set completed(bool value) {
+    if (_completed != value) {
+      _completed = value;
+      notifyListeners('completed');
+    }
+  }
+
+  String get status => _status;
+  set status(String value) {
+    if (_status != value) {
+      _status = value;
+      notifyListeners('status');
+    }
   }
 }
 
 /// -------------------
-/// Main App
+/// MANY → ONE Model
 /// -------------------
+class Dashboard extends ReactiveModel {
+  final List<Task> sources;
 
+  Dashboard(this.sources) {
+    for (final task in sources) {
+      addNested(task); // listen to many
+    }
+  }
+}
+
+/// -------------------
+/// MANY ↔ MANY Model
+/// -------------------
+class Group extends ReactiveModel {
+  final String name;
+  final List<Task> tasks;
+
+  Group({required this.name, required this.tasks}) {
+    for (final task in tasks) {
+      addNested(task);
+    }
+  }
+}
+
+/// -------------------
+/// App
+/// -------------------
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  MyApp({super.key});
-
-  final Task task1 = Task(title: "Build Reactive ORM");
-  final Task task2 = Task(title: "Write Documentation");
-  final Task task3 = Task(title: "Test Flutter App");
-
-  final ReactiveTaskList taskList = ReactiveTaskList();
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    taskList.add(task1);
-    taskList.add(task2);
-    taskList.add(task3);
+    return const MaterialApp(home: HomePage());
+  }
+}
 
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(title: Text("Reactive ORM Demo with Status")),
-        body: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            children: [
-              /// 1️⃣ Single Task with status
-              ReactiveBuilder<Task>(
-                model: task1,
-                builder: (task) => ListTile(
-                  title: Text(task.title),
-                  subtitle: Text(task.status),
-                  trailing: Checkbox(
-                    value: task.completed,
-                    onChanged: (val) => task.completed = val!,
-                  ),
-                ),
-              ),
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
 
-              Divider(),
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
 
-              /// 2️⃣ Reactive List with operation status
-              Expanded(
-                child: ReactiveBuilder<ReactiveTaskList>(
-                  model: taskList,
-                  builder: (list) => ListView.builder(
-                    itemCount: list.items.length,
-                    itemBuilder: (_, index) {
-                      final t = list.items[index];
-                      return ReactiveBuilder<Task>(
-                        model: t,
-                        fields: ['completed', 'status'],
-                        builder: (task) => ListTile(
-                          title: Text(task.title),
-                          subtitle: Text(task.status),
-                          trailing: Checkbox(
-                            value: task.completed,
-                            onChanged: (val) => task.completed = val!,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ],
+class _HomePageState extends State<HomePage> {
+  /// =====================================================
+  /// DEMO TASKS (Semantic)
+  /// =====================================================
+  final Task objectWise = Task(title: "Object-wise Reactivity");
+  final Task fieldWise = Task(title: "Field-wise Reactivity");
+
+  final Task manyA = Task(title: "Many → One : A");
+  final Task manyB = Task(title: "Many → One : B");
+
+  late final Dashboard dashboard;
+
+  late final Group group1;
+  late final Group group2;
+
+  @override
+  void initState() {
+    super.initState();
+
+    dashboard = Dashboard([manyA, manyB]);
+
+    group1 = Group(name: "Group 1", tasks: [objectWise, fieldWise]);
+    group2 = Group(name: "Group 2", tasks: [fieldWise, manyA]);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Reactive ORM – Patterns Demo")),
+      body: ListView(
+        padding: const EdgeInsets.all(12),
+        children: [
+          /// =====================================================
+          /// 1️⃣ OBJECT-WISE
+          /// =====================================================
+          const Text(
+            "1️⃣ Object-wise (Whole Object Reacts)",
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
-        ),
-        floatingActionButton: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            FloatingActionButton(
-              heroTag: "toggle",
-              onPressed: () {
-                task1.completed = !task1.completed;
-              },
-              tooltip: "Toggle Completion",
-              child: Icon(Icons.check),
+          ReactiveBuilder<Task>(
+            model: objectWise,
+            builder: (task) {
+              debugPrint("🔄 Object-wise rebuild");
+              return ListTile(
+                title: Text(task.title),
+                subtitle: Text(task.status),
+                trailing: Checkbox(
+                  value: task.completed,
+                  onChanged: (v) => task.completed = v!,
+                ),
+              );
+            },
+          ),
+
+          const Divider(),
+
+          /// =====================================================
+          /// 2️⃣ FIELD-WISE
+          /// =====================================================
+          const Text(
+            "2️⃣ Field-wise (Only selected fields react)",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          ReactiveBuilder<Task>(
+            model: fieldWise,
+            fields: ['completed', 'status'],
+            builder: (task) {
+              debugPrint("🎯 Field-wise rebuild");
+              return ListTile(
+                title: Text(task.title),
+                subtitle: Text(task.status),
+                trailing: Checkbox(
+                  value: task.completed,
+                  onChanged: (v) => task.completed = v!,
+                ),
+              );
+            },
+          ),
+
+          const Divider(),
+
+          /// =====================================================
+          /// 3️⃣ MANY → ONE
+          /// =====================================================
+          const Text(
+            "3️⃣ Many → One (Multiple models → Single observer)",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          ReactiveBuilder<Dashboard>(
+            model: dashboard,
+            builder: (_) {
+              debugPrint("📡 Dashboard rebuilt");
+              return Column(
+                children: [
+                  Text("A: ${manyA.completed}"),
+                  Text("B: ${manyB.completed}"),
+                ],
+              );
+            },
+          ),
+
+          const Divider(),
+
+          /// =====================================================
+          /// 4️⃣ MANY ↔ MANY
+          /// =====================================================
+          const Text(
+            "4️⃣ Many ↔ Many (Shared models)",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+
+          ReactiveBuilder<Group>(
+            model: group1,
+            builder: (g) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  g.name,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                ...g.tasks.map((t) => Text("• ${t.title} → ${t.completed}")),
+              ],
             ),
-            SizedBox(height: 12),
-            FloatingActionButton(
-              heroTag: "add",
-              onPressed: () {
-                final newTask = Task(
-                  title: "New Task ${taskList.items.length + 1}",
-                );
-                taskList.add(newTask);
-              },
-              tooltip: "Add Task",
-              child: Icon(Icons.add),
+          ),
+
+          const SizedBox(height: 12),
+
+          ReactiveBuilder<Group>(
+            model: group2,
+            builder: (g) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  g.name,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                ...g.tasks.map((t) => Text("• ${t.title} → ${t.completed}")),
+              ],
             ),
-            SizedBox(height: 12),
-            FloatingActionButton(
-              heroTag: "remove",
-              onPressed: () {
-                if (taskList.items.isNotEmpty) {
-                  taskList.remove(taskList.items.last);
-                }
-              },
-              tooltip: "Remove Last Task",
-              child: Icon(Icons.delete),
-            ),
-          ],
-        ),
+          ),
+        ],
+      ),
+
+      /// =====================================================
+      /// ACTIONS
+      /// =====================================================
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton(
+            heroTag: "obj",
+            tooltip: "Toggle Object-wise",
+            onPressed: () {
+              objectWise.completed = !objectWise.completed;
+            },
+            child: const Icon(Icons.refresh),
+          ),
+          const SizedBox(height: 10),
+          FloatingActionButton(
+            heroTag: "field",
+            tooltip: "Toggle Field-wise",
+            onPressed: () {
+              fieldWise.completed = !fieldWise.completed;
+            },
+            child: const Icon(Icons.filter_alt),
+          ),
+          const SizedBox(height: 10),
+          FloatingActionButton(
+            heroTag: "many",
+            tooltip: "Toggle Many → One",
+            onPressed: () {
+              manyA.completed = !manyA.completed;
+            },
+            child: const Icon(Icons.merge),
+          ),
+        ],
       ),
     );
   }
 }
-
-///Try Version
-// import 'package:example/models/task.dart';
-// import 'package:flutter/material.dart';
-// import 'package:reactive_orm/reactive_orm.dart';
-//
-//
-// // Project Model with nested tasks
-// class Project extends ReactiveModel {
-//   String _name;
-//   final List<Task> tasks;
-//
-//   Project({required String name, required this.tasks}) : _name = name {
-//     // Listen to all task changes
-//     for (var task in tasks) {
-//       task.addListener(() => notifyListeners('tasks'));
-//     }
-//   }
-//
-//   String get name => _name;
-//   set name(String value) {
-//     if (_name != value) {
-//       _name = value;
-//       notifyListeners('name');
-//     }
-//   }
-// }
-//
-// // Reactive list example
-// class ReactiveTaskList extends ReactiveModel {
-//   final List<Task> items = [];
-//
-//   void add(Task task) {
-//     items.add(task);
-//     task.addListener(() => notifyListeners());
-//     notifyListeners();
-//   }
-//
-//   void remove(Task task) {
-//     items.remove(task);
-//     task.removeListener(() => notifyListeners());
-//     notifyListeners();
-//   }
-// }
-//
-// void main() {
-//   runApp(MyApp());
-// }
-//
-// class MyApp extends StatelessWidget {
-//   final Task task1 = Task(title: "Build Reactive ORM");
-//   final Task task2 = Task(title: "Write Documentation");
-//   final Project project = Project(name: "Flutter App", tasks: []);
-//
-//   final ReactiveTaskList taskList = ReactiveTaskList();
-//
-//   MyApp({super.key}) {
-//     project.tasks.add(task1);
-//     project.tasks.add(task2);
-//     taskList.add(task1);
-//     taskList.add(task2);
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       home: Scaffold(
-//         appBar: AppBar(title: Text("Reactive ORM Demo")),
-//         body: Column(
-//           children: [
-//             // 1️⃣ Single Task ReactiveBuilder
-//             ReactiveBuilder<Task>(
-//               model: task1,
-//               builder: (task) => ListTile(
-//                 title: Text(task.title),
-//                 trailing: Checkbox(
-//                   value: task.completed,
-//                   onChanged: (val) => task.completed = val!,
-//                 ),
-//               ),
-//             ),
-//
-//             // 2️⃣ Multiple Widgets Listening to the same model
-//             ReactiveBuilder<Task>(
-//               model: task1,
-//               builder: (task) => Text(
-//                 task.completed ? "Task Done ✅" : "Task Pending ❌",
-//               ),
-//             ),
-//
-//             Divider(),
-//
-//             // 3️⃣ Nested Project Example
-//             ReactiveBuilder<Project>(
-//               model: project,
-//               builder: (proj) => Column(
-//                 children: [
-//                   Text("Project: ${proj.name}", style: TextStyle(fontSize: 18)),
-//                   ...proj.tasks.map((t) => ReactiveBuilder<Task>(
-//                     model: t,
-//                     builder: (task) => ListTile(
-//                       title: Text(task.title),
-//                       trailing: Checkbox(
-//                         value: task.completed,
-//                         onChanged: (val) => task.completed = val!,
-//                       ),
-//                     ),
-//                   )),
-//                 ],
-//               ),
-//             ),
-//
-//             Divider(),
-//
-//             // 4️⃣ Reactive List Example
-//             Expanded(
-//               child: ReactiveBuilder<ReactiveTaskList>(
-//                 model: taskList,
-//                 builder: (list) => ListView.builder(
-//                   itemCount: list.items.length,
-//                   itemBuilder: (_, index) {
-//                     final t = list.items[index];
-//                     return ReactiveBuilder<Task>(
-//                       model: t,
-//                       builder: (task) => ListTile(
-//                         title: Text(task.title),
-//                         trailing: Checkbox(
-//                           value: task.completed,
-//                           onChanged: (val) => task.completed = val!,
-//                         ),
-//                       ),
-//                     );
-//                   },
-//                 ),
-//               ),
-//             ),
-//           ],
-//         ),
-//         floatingActionButton: FloatingActionButton(
-//           onPressed: () {
-//             task1.completed = !task1.completed;
-//           },
-//           child: Icon(Icons.check),
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-///Version 0.0.1
-// import 'package:example/models/task.dart';
-// import 'package:flutter/material.dart';
-// import 'package:reactive_orm/reactive_orm.dart';
-//
-// void main() {
-//   runApp(MyApp());
-// }
-//
-// class MyApp extends StatelessWidget {
-//   final Task myTask = Task(title: "Build Reactive ORM");
-//
-//   MyApp({super.key});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       home: Scaffold(
-//         appBar: AppBar(title: Text("Reactive ORM Demo")),
-//         body: Center(
-//           child: ReactiveBuilder<Task>(
-//             model: myTask,
-//             builder: (task) => ListTile(
-//               title: Text(task.title),
-//               trailing: Checkbox(
-//                 value: task.completed,
-//                 onChanged: (val) => task.completed = val!,
-//               ),
-//             ),
-//           ),
-//         ),
-//         floatingActionButton: FloatingActionButton(
-//           onPressed: () {
-//             myTask.completed = !myTask.completed;
-//           },
-//           child: Icon(Icons.check),
-//         ),
-//       ),
-//     );
-//   }
-// }

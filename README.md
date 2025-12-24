@@ -2,105 +2,215 @@
 
 A lightweight **reactive ORM-style state management package for Flutter** that allows UI to automatically rebuild when model properties change — without `setState`, streams, or boilerplate.
 
-This package focuses on:
-- Simple, natural Dart models
-- Automatic reactivity on property mutation
-- Clean and minimal API
+It is designed to feel like working with **plain Dart models**, while still getting **fine-grained UI reactivity**.
 
-> ⚠️ This is an **early alpha (v0.0.1)** release. APIs may change.
+> ⚠️ **Early Alpha (v0.0.3)**  
+> APIs are experimental and may change.
+
+---
+
+## 🎬 Demo
+![Reactive_ORM Demo](https://raw.githubusercontent.com/PravinKunnure/reactive_orm/main/example/assets/reactive_orm_demo.mov)
+
+---
+
+## ✨ Core Philosophy
+
+- Models are plain Dart objects
+- State changes happen via normal field mutation
+- UI reacts automatically
+- No providers, no contexts, no streams
 
 ---
 
 ## ✨ Features
 
-- Reactive models with automatic UI updates
-- No `setState`, `ChangeNotifier`, or streams
-- Simple and readable API
-- Widget-level rebuild control using `ReactiveBuilder`
-- Multiple widgets can listen to the same model
+- ✅ Reactive models with automatic UI updates
+- ✅ Object-wise reactivity (entire model)
+- ✅ Field-wise reactivity (specific properties only)
+- ✅ Multiple widgets can listen to the same model
+- ✅ Nested & shared models supported
+- ❌ No `setState`
+- ❌ No `ChangeNotifier`
+- ❌ No streams
 
 ---
 
-| Feature                    | `ValueNotifier`                | `reactive_orm`                               |
-| -------------------------- | ------------------------------ | -------------------------------------------- |
-| Observes a single field?   | Yes, one notifier per field    | No, whole object is reactive                 |
-| Field assignment syntax    | `notifier.value = newValue`    | `model.field = newValue`                     |
-| Multiple widgets listening | Manual setup for each notifier | Automatic for same model instance            |
-| Boilerplate                | More for complex models        | Minimal, ORM-style                           |
-| Ideal for                  | Simple single values           | Complex models with multiple reactive fields |
 
+## 🆚 Comparison
 
+| Feature                    | ValueNotifier                | reactive_orm                    |
+|----------------------------|------------------------------|---------------------------------|
+| Observes a single field?   | Yes (one notifier per field) | Yes (field-wise) + whole object |
+| Field assignment syntax    | `notifier.value = newValue`  | `model.field = newValue`        |
+| Multiple widgets listening | Manual wiring                | Automatic                       |
+| Nested models              | Manual                       | Built-in (`addNested`)          |
+| Boilerplate                | Medium → High                | Minimal, ORM-style              |
+| Ideal for                  | Simple values                | Complex reactive models         |
+
+---
 
 ## 🚀 Getting Started
 
 ### Installation
 
-Add the package to your `pubspec.yaml`:
-
 ```yaml
 dependencies:
-  reactive_orm: ^0.0.1
-
+  reactive_orm: ^0.0.3
 
 
 
 🧩 Basic Usage
-1. Create a reactive model
-class Task extends ReactiveModel {
-  String title;
-  bool completed;
 
-  Task({required this.title, this.completed = false});
+
+1️⃣ Create a Reactive Model
+class Task extends ReactiveModel {
+  String _title;
+  bool _completed = false;
+
+  Task({required String title}) : _title = title;
+
+  String get title => _title;
+  set title(String value) {
+    _title = value;
+    notifyListeners('title');
+  }
+
+  bool get completed => _completed;
+  set completed(bool value) {
+    _completed = value;
+    notifyListeners('completed');
+  }
 }
 
-2. Use it in your UI
-final Task myTask = Task(title: "Build Reactive ORM");
 
+2️⃣ Object-wise Reactivity (default)
+Any field change rebuilds the widget
+final task = Task(title: "Object-wise");
 ReactiveBuilder<Task>(
-  model: myTask,
-  builder: (task) => ListTile(
-    title: Text(task.title),
+  model: task,
+  builder: (t) => ListTile(
+    title: Text(t.title),
     trailing: Checkbox(
-      value: task.completed,
-      onChanged: (val) => task.completed = val!,
+      value: t.completed,
+      onChanged: (v) => t.completed = v!,
     ),
   ),
 );
+-Rebuilds when:
+ title changes
+ completed changes
+ any other field changes
 
-3. Mutate the model (UI updates automatically)
-myTask.completed = !myTask.completed;
+
+3️⃣ Field-wise Reactivity (optimized)
+Widget rebuilds only when specified fields change
+final task = Task(title: "Field-wise");
+ReactiveBuilder<Task>(
+  model: task,
+  fields: ['completed'],
+  builder: (t) => Checkbox(
+    value: t.completed,
+    onChanged: (v) => t.completed = v!,
+  ),
+);
+
+-Rebuilds only when:
+ completed changes 
+ ❌ title changes are ignored
 
 
-No setState() required.
 
-🧠 How It Works (High-Level)
 
-Models extend a reactive base class
+🔗 Relationship Patterns
+🔹 Many → One (Aggregation)
 
-Property mutations notify listeners automatically
+Multiple models feed a single reactive observer.
 
-ReactiveBuilder listens to the model and rebuilds when changes occur
+class Dashboard extends ReactiveModel {
+  Dashboard(List<Task> tasks) {
+    for (final t in tasks) {
+      addNested(t);
+    }
+  }
+}
 
-Listeners are disposed safely with widget lifecycle
+ReactiveBuilder<Dashboard>(
+  model: dashboard,
+  builder: (_) => Text("Dashboard updated"),
+);
+
+
+✔ Any task change updates the dashboard
+
+🔹 Many ↔ Many (Shared Models)
+
+Same model instance used across multiple parents.
+
+class Group extends ReactiveModel {
+  Group(List<Task> tasks) {
+    for (final t in tasks) {
+      addNested(t);
+    }
+  }
+}
+
+
+✔ One task update reflects everywhere
+✔ No duplication
+✔ No syncing logic
+
+
+
+🧠 How It Works (High Level)
+
+Models extend ReactiveModel
+
+Field setters call notifyListeners(fieldName)
+
+ReactiveBuilder listens to:
+
+Whole model (object-wise)
+
+Specific fields (field-wise)
+
+Nested models propagate changes upward
+
+Widgets rebuild safely with lifecycle awareness
 
 🛣 Roadmap
 
-Planned features for future versions:
+Planned improvements:
 
-Field-level reactivity
+Batch updates / transactions
 
-Batch updates
-
-Async persistence support
+Async persistence hooks
 
 Database adapters
 
-DevTools support
+DevTools / debug inspector
+
+Code generation (optional)
 
 🧪 Status
-Version: 0.0.1
 
-Stability: Experimental
+Version: 0.0.3
 
-API: Subject to change
+Stability: Experimental / Alpha
+
+Use case: Learning, prototyping, early production experiments
+
+📌 Summary
+
+reactive_orm is ideal when you want:
+
+-Clean Dart models
+
+-Minimal boilerplate
+
+-ORM-like mental model
+
+-Fine-grained UI reactivity
+
+-No framework lock-in
 

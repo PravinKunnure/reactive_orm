@@ -2,28 +2,53 @@
 
 All notable changes to this project will be documented in this file.
 
+This project follows **Semantic Versioning**.
+
+---
+
+## [0.0.3] - 2025-12-24
+### Added
+- Field-wise reactivity via `ReactiveBuilder(fields: [...])`
+- Selective widget rebuilds based on changed model fields
+- Support for nested reactive models using `addNested`
+- Many → One and Many ↔ Many reactive relationships
+
+### Improved
+- Optimized notification and listener dispatch
+- Reduced unnecessary widget rebuilds
+- Cleaner internal callback handling
+
+### Notes
+- Still an **early alpha**
+- APIs may change based on feedback
+
+---
+
+## [0.0.2] - 2025-12-24
+### Added
+- Internal support for field-level change notifications
+- Model property setters can now notify by field name
+- Foundation for selective reactivity (used in 0.0.3)
+
+### Improved
+- Performance optimizations in listener handling
+- Reduced redundant rebuild triggers
+
+### Notes
+- Field-wise reactivity not exposed publicly yet
+- Transitional internal release
+
+---
+
 ## [0.0.1] - 2025-12-24
 ### Added
 - Initial release of `reactive_orm`
 - `ReactiveModel` base class for reactive data models
 - `ReactiveBuilder` widget for automatic UI updates
-- Automatic rebuilds when model properties change
-- Example integration with Flutter
-- Support for multiple widgets observing the same model
+- Object-wise reactivity (whole model rebuilds)
+- Multiple widgets can observe the same model instance
+- Basic Flutter integration example
 
 ### Notes
 - Experimental alpha release
-- API subject to change
 - Persistence and advanced ORM features not yet implemented
-
-
-## [0.0.2] - 2025-12-24
-### Added
-- Initial release of `reactive_orm`
-- `ReactiveModel` base class for reactive data models
-- `ReactiveBuilder` widget for automatic UI updates
-- Automatic rebuilds when model properties change
-- Example integration with Flutter
-- Support for multiple widgets observing the same model
-- Optimised the system and callback
-- Make it field specific instead of object dependant
