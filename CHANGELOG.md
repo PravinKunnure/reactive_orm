@@ -6,6 +6,12 @@ This project follows **Semantic Versioning**.
 
 ---
 
+## [0.0.5] - 2025-12-26
+### Added
+- Improved README structure, highlighting object-wise, field-wise, Many → One, and Many ↔ Many patterns
+- Updated GIF demo to match current patterns (GIF is too big to see on pub dev)
+
+
 ## [0.0.4] - 2025-12-26
 ### Added
 - In README for better documentation and examples

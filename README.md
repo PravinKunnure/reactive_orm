@@ -1,17 +1,17 @@
 # reactive_orm
 
+[![Pub Version](https://img.shields.io/pub/v/reactive_orm)](https://pub.dev/packages/reactive_orm) | [![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://opensource.org/licenses/MIT)
+
 A **lightweight, reactive ORM-style state management package for Flutter**. Update your UI automatically when model properties change — **without `setState`, streams, or boilerplate**.
 
-> Version: 0.0.4 – Experimental / Alpha
+> Version: 0.0.5 – Stable
 
-[![Pub Version](https://img.shields.io/pub/v/reactive_orm)](https://pub.dev/packages/reactive_orm)  
-[![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://opensource.org/licenses/MIT)
 
 ---
 
 ## 🎬 Demo
 
-![Reactive_ORM Demo](https://raw.githubusercontent.com/PravinKunnure/reactive_orm/main/example/assets/reactive_orm_demo.gif)
+![Reactive_ORM Demo](https://raw.githubusercontent.com/PravinKunnure/reactive_orm/main/example/assets/reactive_orm_demo_.gif)
 
 ---
 
@@ -184,8 +184,8 @@ class Group extends ReactiveModel {
 
 
 🧪 Status
-- Version: 0.0.4
-- Stability: Experimental / Alpha
+- Version: 0.0.5
+- Stability: Stable/No major updates are peding
 - Use case: Learning, prototyping, early production experiments
 
 
