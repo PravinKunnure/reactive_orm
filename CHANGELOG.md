@@ -6,6 +6,24 @@ This project follows **Semantic Versioning**.
 
 ---
 
+## [0.0.4] - 2025-12-26
+### Added
+- In README for better documentation and examples
+- Clarified `model.field = newValue (auto-notifies)` syntax in docs
+- Improved README structure, highlighting object-wise, field-wise, Many → One, and Many ↔ Many patterns
+- Updated GIF demo to match current patterns
+
+### Improved
+- Documentation clarity: emphasized which fields trigger rebuilds
+- Polished example app to better showcase reactive patterns
+- Minor code refactoring in example to optimize field setters and `addNested` usage
+
+### Notes
+- Still experimental/alpha
+- APIs remain stable but may evolve based on user feedback
+
+---
+
 ## [0.0.3] - 2025-12-24
 ### Added
 - Field-wise reactivity via `ReactiveBuilder(fields: [...])`
