@@ -6,6 +6,26 @@ This project follows **Semantic Versioning**.
 
 ---
 
+## [0.0.7] - 2025-12-29
+### Added
+- Formalized the meaning of **ORM** as **Reactive Object–Relationship Model**
+- Clear separation in documentation of what `reactive_orm` **is** and **is not**
+- Explicit positioning as a **field-level state management solution**
+- Documented relationship-driven reactivity (Many → One, Many ↔ Many)
+- Improved high-level explanation of object-wise vs field-wise reactivity
+
+### Improved
+- README rewritten for clarity, scalability, and pub.dev discoverability
+- Examples refined to highlight real-world domain modeling patterns
+- Comparison table polished to better differentiate from `ValueNotifier`
+- Overall package messaging aligned for medium-to-large Flutter apps
+
+### Notes
+- No breaking API changes
+- Focused on conceptual clarity and long-term positioning
+
+---
+
 ## [0.0.6] - 2025-12-29
 ### Added
 - Updated README to justify `reactive_orm` name as **Object Reactive Model**
@@ -24,14 +44,14 @@ This project follows **Semantic Versioning**.
 ## [0.0.5] - 2025-12-26
 ### Added
 - Improved README structure, highlighting object-wise, field-wise, Many → One, and Many ↔ Many patterns
-- Updated GIF demo to match current patterns (GIF is too big to see on pub.dev)
+- Updated GIF demo to match current patterns (GIF size optimized for pub.dev)
 
 ---
 
 ## [0.0.4] - 2025-12-26
 ### Added
 - Better documentation and examples in README
-- Clarified `model.field = newValue (auto-notifies)` syntax
+- Clarified `model.field = newValue` (auto-notifies) syntax
 - Highlighted object-wise, field-wise, Many → One, and Many ↔ Many patterns
 - Updated GIF demo to match current patterns
 
@@ -41,7 +61,7 @@ This project follows **Semantic Versioning**.
 - Minor code refactoring in example to optimize field setters and `addNested` usage
 
 ### Notes
-- Still experimental/alpha
+- Still experimental / alpha
 - APIs remain stable but may evolve based on user feedback
 
 ---
@@ -88,7 +108,3 @@ This project follows **Semantic Versioning**.
 - Object-wise reactivity (whole model rebuilds)
 - Multiple widgets can observe the same model instance
 - Basic Flutter integration example
-
-### Notes
-- Experimental alpha release
-- Persistence and advanced ORM features not yet implemented

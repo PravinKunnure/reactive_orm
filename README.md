@@ -2,7 +2,9 @@
 
 [![Pub Version](https://img.shields.io/pub/v/reactive_orm)](https://pub.dev/packages/reactive_orm) | [![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://opensource.org/licenses/MIT)
 
-> ⚠️ **Note:** `reactive_orm` stands for **Object Reactive Model** — inspired by ORM patterns, but it is **not a database ORM**. It is a lightweight, field-level **state management solution** for Flutter UI.
+> ⚠️ **Note:** `reactive_orm` stands for a **Reactive Object–Relationship Model**.  
+> It is **not a database ORM**.  
+> It is a lightweight, field-level **state management solution** for Flutter UI, inspired by ORM-style modeling of objects and relationships — fully in-memory and UI-focused.
 
 ---
 
@@ -14,12 +16,15 @@
 
 ## ✨ Core Philosophy
 
-- Models are **plain Dart objects**.
-- State changes happen via **normal field mutation**.
-- UI reacts **automatically**, with optional field-specific reactivity.
-- No `ChangeNotifier`, providers, streams, or extra boilerplate.
-- Supports **object-wise**, **field-wise**, and **nested reactivity**.
-- ORM-inspired design: models behave like domain entities, but in-memory.
+- Models are **plain Dart objects**
+- State changes happen via **normal field mutation**
+- UI reacts **automatically**, with optional field-specific reactivity
+- No `ChangeNotifier`, providers, streams, or extra boilerplate
+- Supports **object-wise**, **field-wise**, and **nested reactivity**
+- ORM-inspired design:
+  - Objects represent application state
+  - Relationships define propagation (Many → One, Many ↔ Many)
+  - Reactivity keeps the UI in sync
 
 ---
 
@@ -29,9 +34,10 @@
 - ✅ Object-wise reactivity (entire model rebuilds)
 - ✅ Field-wise reactivity (only selected fields rebuild)
 - ✅ Nested & shared models supported
+- ✅ Many → One and Many ↔ Many relationships
 - ✅ Multiple widgets can listen to the same model
 - ✅ Minimal boilerplate
-- ✅ ORM-style mental model
+- ✅ ORM-style mental model (Objects + Relationships)
 
 ---
 
@@ -39,12 +45,13 @@
 
 | Feature                    | ValueNotifier                | reactive_orm                               |
 |----------------------------|------------------------------|--------------------------------------------|
-| Observes a single field?   | Yes (one notifier per field) | Yes (field-wise) + whole object           |
-| Field assignment syntax    | `notifier.value = newValue`  | `model.field = newValue` (auto-notifies) |
+| Observes a single field?   | Yes (one notifier per field) | Yes (field-wise) + whole object            |
+| Field assignment syntax    | `notifier.value = newValue`  | `model.field = newValue` (auto-notifies)   |
 | Multiple widgets listening | Manual wiring                | Automatic                                  |
 | Nested models              | Manual                       | Built-in (`addNested`)                     |
+| Relationships              | ❌                            | ✅ Many → One, Many ↔ Many                  |
 | Boilerplate                | Medium → High                | Minimal, ORM-style                         |
-| Ideal for                  | Simple values                | Complex reactive models                     |
+| Ideal for                  | Simple values                | Complex reactive domain models             |
 
 ---
 
@@ -54,7 +61,8 @@
 
 ```yaml
 dependencies:
-  reactive_orm: ^0.0.6
+  reactive_orm: ^0.0.7
+
 ```
 
 ---
@@ -217,7 +225,7 @@ class Group extends ReactiveModel {
 
 ## 🧪 Status
 
-- Version: 0.0.6
+- Version: 0.0.7
 - Stability: Stable / suitable for prototyping and early production
 - Use case: Learning, prototyping, early production experiments
 
@@ -227,8 +235,9 @@ class Group extends ReactiveModel {
 
 `reactive_orm` is ideal when you want:
 
-- Clean Dart models with **fine-grained reactivity**
-- ORM-like **mental model**, but in-memory and UI-focused
-- Minimal boilerplate, **field-level and object-level reactivity**
-- Nested & shared models without manual wiring
-- A **lightweight state management solution** that scales with Flutter apps
+- Clean Dart models with fine-grained reactivity
+- A Reactive Object–Relationship Model for UI state
+- Object-wise and field-wise rebuild control
+- Nested and shared models without manual wiring
+- Minimal boilerplate with a clear mental model
+- A lightweight yet scalable state management solution for Flutter apps
