@@ -6,17 +6,33 @@ This project follows **Semantic Versioning**.
 
 ---
 
+## [0.0.6] - 2025-12-29
+### Added
+- Updated README to justify `reactive_orm` name as **Object Reactive Model**
+- Emphasized **field-level reactivity**, **object-wise reactivity**, and **nested/shared model patterns**
+- Clarified ORM-style mental model: models behave like domain entities but are purely in-memory
+- Added explicit explanation: what the package **is** and **is not**
+- Updated example usage for field-wise and object-wise reactivity
+
+### Improved
+- Improved documentation structure for better readability and clarity
+- Updated GIF demo to showcase field-wise and nested model updates
+- Polished comparison table with ValueNotifier for clearer differentiation
+
+---
+
 ## [0.0.5] - 2025-12-26
 ### Added
 - Improved README structure, highlighting object-wise, field-wise, Many → One, and Many ↔ Many patterns
-- Updated GIF demo to match current patterns (GIF is too big to see on pub dev)
+- Updated GIF demo to match current patterns (GIF is too big to see on pub.dev)
 
+---
 
 ## [0.0.4] - 2025-12-26
 ### Added
-- In README for better documentation and examples
-- Clarified `model.field = newValue (auto-notifies)` syntax in docs
-- Improved README structure, highlighting object-wise, field-wise, Many → One, and Many ↔ Many patterns
+- Better documentation and examples in README
+- Clarified `model.field = newValue (auto-notifies)` syntax
+- Highlighted object-wise, field-wise, Many → One, and Many ↔ Many patterns
 - Updated GIF demo to match current patterns
 
 ### Improved
@@ -43,7 +59,7 @@ This project follows **Semantic Versioning**.
 - Cleaner internal callback handling
 
 ### Notes
-- Still an **early alpha**
+- Early alpha
 - APIs may change based on feedback
 
 ---

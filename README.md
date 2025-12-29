@@ -2,10 +2,7 @@
 
 [![Pub Version](https://img.shields.io/pub/v/reactive_orm)](https://pub.dev/packages/reactive_orm) | [![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://opensource.org/licenses/MIT)
 
-A **lightweight, reactive ORM-style state management package for Flutter**. Update your UI automatically when model properties change — **without `setState`, streams, or boilerplate**.
-
-> Version: 0.0.5 – Stable
-
+> ⚠️ **Note:** `reactive_orm` stands for **Object Reactive Model** — inspired by ORM patterns, but it is **not a database ORM**. It is a lightweight, field-level **state management solution** for Flutter UI.
 
 ---
 
@@ -21,6 +18,8 @@ A **lightweight, reactive ORM-style state management package for Flutter**. Upda
 - State changes happen via **normal field mutation**.
 - UI reacts **automatically**, with optional field-specific reactivity.
 - No `ChangeNotifier`, providers, streams, or extra boilerplate.
+- Supports **object-wise**, **field-wise**, and **nested reactivity**.
+- ORM-inspired design: models behave like domain entities, but in-memory.
 
 ---
 
@@ -31,6 +30,8 @@ A **lightweight, reactive ORM-style state management package for Flutter**. Upda
 - ✅ Field-wise reactivity (only selected fields rebuild)
 - ✅ Nested & shared models supported
 - ✅ Multiple widgets can listen to the same model
+- ✅ Minimal boilerplate
+- ✅ ORM-style mental model
 
 ---
 
@@ -39,7 +40,7 @@ A **lightweight, reactive ORM-style state management package for Flutter**. Upda
 | Feature                    | ValueNotifier                | reactive_orm                               |
 |----------------------------|------------------------------|--------------------------------------------|
 | Observes a single field?   | Yes (one notifier per field) | Yes (field-wise) + whole object           |
-| Field assignment syntax    | `notifier.value = newValue`  | `model.field = newValue (auto-notifies)`  |
+| Field assignment syntax    | `notifier.value = newValue`  | `model.field = newValue` (auto-notifies) |
 | Multiple widgets listening | Manual wiring                | Automatic                                  |
 | Nested models              | Manual                       | Built-in (`addNested`)                     |
 | Boilerplate                | Medium → High                | Minimal, ORM-style                         |
@@ -53,11 +54,16 @@ A **lightweight, reactive ORM-style state management package for Flutter**. Upda
 
 ```yaml
 dependencies:
-  reactive_orm: ^0.0.4
+  reactive_orm: ^0.0.6
+```
 
+---
 
-🧩 Basic Usage
-1️⃣ Create a Reactive Model
+### 🧩 Basic Usage
+
+#### 1️⃣ Create a Reactive Model
+
+```dart
 import 'package:reactive_orm/reactive_orm.dart';
 
 class Task extends ReactiveModel {
@@ -91,11 +97,15 @@ class Task extends ReactiveModel {
     }
   }
 }
+```
 
+---
 
-2️⃣ Object-wise Reactivity (Whole Object)
+#### 2️⃣ Object-wise Reactivity (Whole Object)
+
 Any field change rebuilds the widget:
 
+```dart
 final task = Task(title: "Object-wise");
 
 ReactiveBuilder<Task>(
@@ -109,11 +119,15 @@ ReactiveBuilder<Task>(
     ),
   ),
 );
+```
 
+---
 
-3️⃣ Field-wise Reactivity (Optimized)
+#### 3️⃣ Field-wise Reactivity (Optimized)
+
 Widget rebuilds only when specified fields change:
 
+```dart
 final task = Task(title: "Field-wise");
 
 ReactiveBuilder<Task>(
@@ -128,12 +142,20 @@ ReactiveBuilder<Task>(
     ),
   ),
 );
-- Rebuilds only when completed or status changes.
+```
+
+- Rebuilds only when `completed` or `status` changes.
 - Changes to other fields are ignored.
 
-🔗 Relationship Patterns
-1-> Many → One (Aggregation)
-    Multiple models feed a single reactive observer:
+---
+
+### 🔗 Relationship Patterns
+
+#### 1-> Many → One (Aggregation)
+
+Multiple models feed a single reactive observer:
+
+```dart
 class Dashboard extends ReactiveModel {
   final List<Task> sources;
   Dashboard(this.sources) {
@@ -147,11 +169,15 @@ ReactiveBuilder<Dashboard>(
   model: dashboard,
   builder: (_) => Text("Dashboard updated"),
 );
+```
+
 - ✔ Any task change updates the dashboard automatically.
 
+#### 2-> Many ↔ Many (Shared Models)
 
-2-> Many ↔ Many (Shared Models)
-    Same model instance used across multiple parents:
+Same model instance used across multiple parents:
+
+```dart
 class Group extends ReactiveModel {
   final String name;
   final List<Task> tasks;
@@ -160,39 +186,49 @@ class Group extends ReactiveModel {
     for (final task in tasks) addNested(task);
   }
 }
+```
 
 - ✔ One task update reflects everywhere.
 - ✔ No duplication or manual syncing required.
 
+---
 
-🧠 How It Works (High Level)
-- Models extend ReactiveModel.
-- Field setters call notifyListeners(fieldName) when the value changes.
-- ReactiveBuilder widgets listen to either:
-- Whole model (object-wise)
-- Specific fields (field-wise)
+## 🧠 How It Works (High Level)
+
+- Models extend `ReactiveModel`.
+- Field setters call `notifyListeners(fieldName)` when the value changes.
+- `ReactiveBuilder` widgets listen to either:
+    - Whole model (object-wise)
+    - Specific fields (field-wise)
 - Nested models propagate changes upward automatically.
 - Widgets rebuild safely, respecting Flutter lifecycle.
 
+---
 
-🛣 Roadmap
+## 🛣 Roadmap
+
 - Batch updates / transactions
 - Async persistence hooks
-- Database adapters
+- Database adapters (optional)
 - DevTools / debug inspector
 - Optional code generation
 
+---
 
-🧪 Status
-- Version: 0.0.5
-- Stability: Stable/No major updates are peding
+## 🧪 Status
+
+- Version: 0.0.6
+- Stability: Stable / suitable for prototyping and early production
 - Use case: Learning, prototyping, early production experiments
 
+---
 
-📌 Summary
-- reactive_orm is ideal when you want:
-- Clean Dart models
-- Minimal boilerplate
-- ORM-like mental model
-- Fine-grained UI reactivity
-- No framework lock-in
+## 📌 Summary
+
+`reactive_orm` is ideal when you want:
+
+- Clean Dart models with **fine-grained reactivity**
+- ORM-like **mental model**, but in-memory and UI-focused
+- Minimal boilerplate, **field-level and object-level reactivity**
+- Nested & shared models without manual wiring
+- A **lightweight state management solution** that scales with Flutter apps
