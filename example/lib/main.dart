@@ -15,7 +15,7 @@ class Task extends ReactiveModel {
   set title(String value) {
     if (_title != value) {
       _title = value;
-      notifyListeners('title');
+      notifyListeners(#title); // changed to Symbol
     }
   }
 
@@ -23,7 +23,7 @@ class Task extends ReactiveModel {
   set completed(bool value) {
     if (_completed != value) {
       _completed = value;
-      notifyListeners('completed');
+      notifyListeners(#completed); // changed to Symbol
     }
   }
 
@@ -31,7 +31,7 @@ class Task extends ReactiveModel {
   set status(String value) {
     if (_status != value) {
       _status = value;
-      notifyListeners('status');
+      notifyListeners(#status); // changed to Symbol
     }
   }
 }
@@ -151,7 +151,7 @@ class _HomePageState extends State<HomePage> {
           ),
           ReactiveBuilder<Task>(
             model: fieldWise,
-            fields: ['completed', 'status'],
+            fields: [#completed, #status], // changed to Symbols
             builder: (task) {
               debugPrint("🎯 Field-wise rebuild");
               return ListTile(

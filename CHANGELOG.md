@@ -6,6 +6,28 @@ This project follows **Semantic Versioning**.
 
 ---
 
+## [0.0.9] - 2025-12-30
+### Added
+- Field notification with Symbol
+- Safer and typo-proof alternative to string field names (#title, #completed, #status).
+- Field-wise ReactiveBuilder updated to support Symbols.
+- Nested model support improved
+- addNested() now handles multiple nested models safely.
+
+###Changed
+- Task model setters now notify listeners using Symbols instead of strings.
+- Example app updated to showcase Symbol-based field notifications.
+- Debug logging added to clearly show which widgets rebuild.
+
+### Fixed
+- Fixed potential rebuild issues when multiple fields change in nested models.
+- Fixed minor typo in example: field names in ReactiveBuilder.fields.
+
+### Notes
+- This release maintains backward compatibility with string-based field notifications, but Symbol-based fields are now recommended.
+- Object-wise, field-wise, Many → One, and Many ↔ Many reactivity patterns remain fully supported.
+
+
 ## [0.0.7] - 2025-12-29
 ### Added
 - Formalized the meaning of **ORM** as **Reactive Object–Relationship Model**
