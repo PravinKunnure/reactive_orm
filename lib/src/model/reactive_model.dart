@@ -3,12 +3,15 @@ typedef VoidCallback = void Function();
 class ReactiveModel {
   final Map<Symbol, List<VoidCallback>> _fieldListeners = {};
   final List<ReactiveModel> _nestedModels = [];
-  bool _isBatching = false;
-  final Set<Symbol> _batchedFields = {};
 
-  // Add listener for a specific field or all fields
+  bool _isBatching = false;
+  final Set<Symbol> _batchedFields = {}; // ✅ WHY Set? Explained below
+
+  /// ----------------------------
+  /// Add listener
+  /// ----------------------------
   void addListener(VoidCallback listener, {Symbol? field}) {
-    final key = field ?? #*; // #* = wildcard for all fields
+    final key = field ?? #*; // wildcard
     _fieldListeners.putIfAbsent(key, () => []).add(listener);
   }
 
@@ -17,6 +20,9 @@ class ReactiveModel {
     _fieldListeners[key]?.remove(listener);
   }
 
+  /// ----------------------------
+  /// Notify listeners
+  /// ----------------------------
   void notifyListeners([Symbol? field]) {
     if (_isBatching) {
       if (field != null) _batchedFields.add(field);
@@ -25,62 +31,140 @@ class ReactiveModel {
 
     final notified = <VoidCallback>{};
 
-    // Field-specific listeners
+    // Field-specific
     if (field != null) {
       for (final l in _fieldListeners[field] ?? []) {
-        if (!notified.contains(l)) {
-          l();
-          notified.add(l);
-        }
+        if (notified.add(l)) l();
       }
     }
 
     // Global listeners
     for (final l in _fieldListeners[#*] ?? []) {
-      if (!notified.contains(l)) {
-        l();
-        notified.add(l);
-      }
+      if (notified.add(l)) l();
     }
   }
 
+  /// ----------------------------
+  /// Nested models
+  /// ----------------------------
   void addNested(ReactiveModel nested) {
-    if (_nestedModels.contains(nested)) return; // prevent duplicates
+    if (_nestedModels.contains(nested)) return;
     _nestedModels.add(nested);
     nested.addListener(() => notifyListeners());
   }
 
-  /// Batch updates to avoid multiple rebuilds
+  /// ----------------------------
+  /// Batch updates
+  /// ----------------------------
   void batch(VoidCallback fn) {
     _isBatching = true;
     try {
       fn();
     } finally {
       _isBatching = false;
-      for (var field in _batchedFields) {
+      for (final field in _batchedFields) {
         notifyListeners(field);
       }
       _batchedFields.clear();
     }
   }
 
-  /// Debug helper: returns listener counts per field
-  Map<String, int> get listenerCount {
-    return {
-      for (var entry in _fieldListeners.entries)
-        '${entry.key}': entry.value.length,
-    };
-  }
-
-  /// Dispose all listeners
+  /// ----------------------------
+  /// Dispose
+  /// ----------------------------
   void dispose() {
     _fieldListeners.clear();
-    for (var nested in _nestedModels) {
+    for (final nested in _nestedModels) {
       nested.dispose();
     }
     _nestedModels.clear();
   }
 }
+
+///Version 0.0.9
+// typedef VoidCallback = void Function();
+//
+// class ReactiveModel {
+//   final Map<Symbol, List<VoidCallback>> _fieldListeners = {};
+//   final List<ReactiveModel> _nestedModels = [];
+//   bool _isBatching = false;
+//   final Set<Symbol> _batchedFields = {};
+//
+//   // Add listener for a specific field or all fields
+//   void addListener(VoidCallback listener, {Symbol? field}) {
+//     final key = field ?? #*; // #* = wildcard for all fields
+//     _fieldListeners.putIfAbsent(key, () => []).add(listener);
+//   }
+//
+//   void removeListener(VoidCallback listener, {Symbol? field}) {
+//     final key = field ?? #*;
+//     _fieldListeners[key]?.remove(listener);
+//   }
+//
+//   void notifyListeners([Symbol? field]) {
+//     if (_isBatching) {
+//       if (field != null) _batchedFields.add(field);
+//       return;
+//     }
+//
+//     final notified = <VoidCallback>{};
+//
+//     // Field-specific listeners
+//     if (field != null) {
+//       for (final l in _fieldListeners[field] ?? []) {
+//         if (!notified.contains(l)) {
+//           l();
+//           notified.add(l);
+//         }
+//       }
+//     }
+//
+//     // Global listeners
+//     for (final l in _fieldListeners[#*] ?? []) {
+//       if (!notified.contains(l)) {
+//         l();
+//         notified.add(l);
+//       }
+//     }
+//   }
+//
+//   void addNested(ReactiveModel nested) {
+//     if (_nestedModels.contains(nested)) return; // prevent duplicates
+//     _nestedModels.add(nested);
+//     nested.addListener(() => notifyListeners());
+//   }
+//
+//   /// Batch updates to avoid multiple rebuilds
+//   void batch(VoidCallback fn) {
+//     _isBatching = true;
+//     try {
+//       fn();
+//     } finally {
+//       _isBatching = false;
+//       for (var field in _batchedFields) {
+//         notifyListeners(field);
+//       }
+//       _batchedFields.clear();
+//     }
+//   }
+//
+//   /// Debug helper: returns listener counts per field
+//   Map<String, int> get listenerCount {
+//     return {
+//       for (var entry in _fieldListeners.entries)
+//         '${entry.key}': entry.value.length,
+//     };
+//   }
+//
+//   /// Dispose all listeners
+//   void dispose() {
+//     _fieldListeners.clear();
+//     for (var nested in _nestedModels) {
+//       nested.dispose();
+//     }
+//     _nestedModels.clear();
+//   }
+// }
 
 ///Version 0.0.7
 // import 'dart:ui';

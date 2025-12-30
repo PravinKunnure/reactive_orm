@@ -1,50 +1,46 @@
 import 'package:flutter/material.dart';
-import 'reactive_model.dart';
+import 'package:reactive_orm/reactive_orm.dart';
 
 class ReactiveBuilder<T extends ReactiveModel> extends StatefulWidget {
   final T model;
   final Widget Function(T model) builder;
   final List<Symbol>? fields;
-  final bool Function(T oldModel, T newModel)? shouldRebuild;
 
   const ReactiveBuilder({
     required this.model,
     required this.builder,
     this.fields,
-    this.shouldRebuild,
     super.key,
   });
 
   @override
-  ReactiveBuilderState<T> createState() => ReactiveBuilderState<T>();
+  State<ReactiveBuilder<T>> createState() => _ReactiveBuilderState<T>();
 }
 
-class ReactiveBuilderState<T extends ReactiveModel>
+class _ReactiveBuilderState<T extends ReactiveModel>
     extends State<ReactiveBuilder<T>> {
   void _onChange() {
     if (!mounted) return;
-    if (widget.shouldRebuild != null) {
-      if (!widget.shouldRebuild!(widget.model, widget.model)) return;
-    }
     setState(() {});
   }
 
   @override
   void initState() {
     super.initState();
+
     if (widget.fields != null) {
-      for (var f in widget.fields!) {
+      for (final f in widget.fields!) {
         widget.model.addListener(_onChange, field: f);
       }
     } else {
-      widget.model.addListener(_onChange); // listen to all fields
+      widget.model.addListener(_onChange);
     }
   }
 
   @override
   void dispose() {
     if (widget.fields != null) {
-      for (var f in widget.fields!) {
+      for (final f in widget.fields!) {
         widget.model.removeListener(_onChange, field: f);
       }
     } else {
@@ -56,6 +52,66 @@ class ReactiveBuilderState<T extends ReactiveModel>
   @override
   Widget build(BuildContext context) => widget.builder(widget.model);
 }
+
+///Version 0.0.9
+// import 'package:flutter/material.dart';
+// import 'reactive_model.dart';
+//
+// class ReactiveBuilder<T extends ReactiveModel> extends StatefulWidget {
+//   final T model;
+//   final Widget Function(T model) builder;
+//   final List<Symbol>? fields;
+//   final bool Function(T oldModel, T newModel)? shouldRebuild;
+//
+//   const ReactiveBuilder({
+//     required this.model,
+//     required this.builder,
+//     this.fields,
+//     this.shouldRebuild,
+//     super.key,
+//   });
+//
+//   @override
+//   ReactiveBuilderState<T> createState() => ReactiveBuilderState<T>();
+// }
+//
+// class ReactiveBuilderState<T extends ReactiveModel>
+//     extends State<ReactiveBuilder<T>> {
+//   void _onChange() {
+//     if (!mounted) return;
+//     if (widget.shouldRebuild != null) {
+//       if (!widget.shouldRebuild!(widget.model, widget.model)) return;
+//     }
+//     setState(() {});
+//   }
+//
+//   @override
+//   void initState() {
+//     super.initState();
+//     if (widget.fields != null) {
+//       for (var f in widget.fields!) {
+//         widget.model.addListener(_onChange, field: f);
+//       }
+//     } else {
+//       widget.model.addListener(_onChange); // listen to all fields
+//     }
+//   }
+//
+//   @override
+//   void dispose() {
+//     if (widget.fields != null) {
+//       for (var f in widget.fields!) {
+//         widget.model.removeListener(_onChange, field: f);
+//       }
+//     } else {
+//       widget.model.removeListener(_onChange);
+//     }
+//     super.dispose();
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) => widget.builder(widget.model);
+// }
 
 ///Version 0.0.7
 // import 'package:flutter/material.dart';

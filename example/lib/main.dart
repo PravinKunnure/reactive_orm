@@ -15,7 +15,7 @@ class Task extends ReactiveModel {
   set title(String value) {
     if (_title != value) {
       _title = value;
-      notifyListeners(#title); // changed to Symbol
+      notifyListeners(#title);
     }
   }
 
@@ -23,7 +23,7 @@ class Task extends ReactiveModel {
   set completed(bool value) {
     if (_completed != value) {
       _completed = value;
-      notifyListeners(#completed); // changed to Symbol
+      notifyListeners(#completed);
     }
   }
 
@@ -31,7 +31,7 @@ class Task extends ReactiveModel {
   set status(String value) {
     if (_status != value) {
       _status = value;
-      notifyListeners(#status); // changed to Symbol
+      notifyListeners(#status);
     }
   }
 }
@@ -44,7 +44,7 @@ class Dashboard extends ReactiveModel {
 
   Dashboard(this.sources) {
     for (final task in sources) {
-      addNested(task); // listen to many
+      addNested(task);
     }
   }
 }
@@ -88,7 +88,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   /// =====================================================
-  /// DEMO TASKS (Semantic)
+  /// DEMO TASKS
   /// =====================================================
   final Task objectWise = Task(title: "Object-wise Reactivity");
   final Task fieldWise = Task(title: "Field-wise Reactivity");
@@ -97,7 +97,6 @@ class _HomePageState extends State<HomePage> {
   final Task manyB = Task(title: "Many → One : B");
 
   late final Dashboard dashboard;
-
   late final Group group1;
   late final Group group2;
 
@@ -139,7 +138,6 @@ class _HomePageState extends State<HomePage> {
               );
             },
           ),
-
           const Divider(),
 
           /// =====================================================
@@ -151,7 +149,7 @@ class _HomePageState extends State<HomePage> {
           ),
           ReactiveBuilder<Task>(
             model: fieldWise,
-            fields: [#completed, #status], // changed to Symbols
+            fields: [#completed, #status],
             builder: (task) {
               debugPrint("🎯 Field-wise rebuild");
               return ListTile(
@@ -164,7 +162,6 @@ class _HomePageState extends State<HomePage> {
               );
             },
           ),
-
           const Divider(),
 
           /// =====================================================
@@ -186,7 +183,6 @@ class _HomePageState extends State<HomePage> {
               );
             },
           ),
-
           const Divider(),
 
           /// =====================================================
@@ -196,7 +192,6 @@ class _HomePageState extends State<HomePage> {
             "4️⃣ Many ↔ Many (Shared models)",
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
-
           ReactiveBuilder<Group>(
             model: group1,
             builder: (g) => Column(
@@ -210,9 +205,7 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
-
           const SizedBox(height: 12),
-
           ReactiveBuilder<Group>(
             model: group2,
             builder: (g) => Column(
@@ -225,6 +218,21 @@ class _HomePageState extends State<HomePage> {
                 ...g.tasks.map((t) => Text("• ${t.title} → ${t.completed}")),
               ],
             ),
+          ),
+          const Divider(),
+
+          /// =====================================================
+          /// 5️⃣ REACTIVE SELECTOR (Title Field)
+          /// =====================================================
+          const Text(
+            "5️⃣ Reactive Selector (Title Only)",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          ReactiveSelector<Task, String>(
+            model: objectWise,
+            field: #title,
+            selector: (task) => task.title,
+            builder: (title) => Text("Title: $title"),
           ),
         ],
       ),
@@ -260,6 +268,17 @@ class _HomePageState extends State<HomePage> {
               manyA.completed = !manyA.completed;
             },
             child: const Icon(Icons.merge),
+          ),
+          const SizedBox(height: 10),
+          FloatingActionButton(
+            heroTag: "title",
+            tooltip: "Change Object-wise Title",
+            onPressed: () {
+              objectWise.title = objectWise.title == "Object-wise Reactivity"
+                  ? "Updated Title"
+                  : "Object-wise Reactivity";
+            },
+            child: const Icon(Icons.text_fields),
           ),
         ],
       ),

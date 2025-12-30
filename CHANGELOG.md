@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 This project follows **Semantic Versioning**.
 
 ---
+## [1.0.0] - 2025-12-30
+### Added
+- Official release: **Reactive Object–Relationship Model** (v1.0.0)
+- Fully Symbol-based field notifications (`#title`, `#completed`, `#status`) for safer, typo-proof updates.
+- Field-wise `ReactiveBuilder` updated to support Symbols.
+- Nested model support improved; `addNested()` handles multiple nested models safely.
+- Relationship patterns formalized: Many → One, Many ↔ Many.
+- Example app updated to demonstrate Symbol-based fields and relationship patterns.
+- Debug logging added to indicate widget rebuilds.
+
+### Changed
+- Task model setters now notify listeners using **Symbols** instead of strings.
+- ReactiveSelector and ReactiveBuilder updated to handle Symbol fields consistently.
+- Documentation revised for clarity: README now emphasizes **Reactive Object–Relationship Model**, not database ORM.
+- Mental model clarified: object graph + relationships drive UI updates.
+- Backward compatibility: string-based field notifications still supported, but Symbols are recommended.
+
+### Fixed
+- Resolved potential multiple rebuild issues when multiple fields change in nested models.
+- Fixed minor typos in `ReactiveBuilder.fields` usage in example.
+
+### Notes
+- v1.0.0 is stable and suitable for prototyping and production-level Flutter apps using complex reactive domain models.
+- Object-wise, field-wise, Many → One, and Many ↔ Many reactivity patterns remain fully supported.
+- Batch updates, async persistence hooks, and optional code generation remain on roadmap.
+
 
 ## [0.0.9] - 2025-12-30
 ### Added

@@ -1,6 +1,6 @@
 name: reactive_orm
 description: "A reactive object-relationship state management layer for Flutter with fine-grained field reactivity."
-version: 0.0.9
+version: 1.0.0
 homepage: 'https://github.com/PravinKunnure/reactive_orm'
 environment:
   sdk: ^3.10.4

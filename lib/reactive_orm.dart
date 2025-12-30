@@ -1,4 +1,6 @@
 library;
 
-export 'package:reactive_orm/src/reactive_builder.dart';
-export 'package:reactive_orm/src/reactive_model.dart';
+export 'src/model/reactive_model.dart';
+
+export 'src/widgets/reactive_builder.dart';
+export 'src/widgets/reactive_selector.dart';
