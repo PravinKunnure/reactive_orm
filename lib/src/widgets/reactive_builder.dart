@@ -24,34 +24,88 @@ class _ReactiveBuilderState<T extends ReactiveModel>
     setState(() {});
   }
 
+  void _addListeners(T model) {
+    if (widget.fields != null) {
+      for (final f in widget.fields!) {
+        model.addListener(_onChange, field: f);
+      }
+    } else {
+      model.addListener(_onChange);
+    }
+  }
+
+  void _removeListeners(T model) {
+    if (widget.fields != null) {
+      for (final f in widget.fields!) {
+        model.removeListener(_onChange, field: f);
+      }
+    } else {
+      model.removeListener(_onChange);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    _addListeners(widget.model);
+  }
 
-    if (widget.fields != null) {
-      for (final f in widget.fields!) {
-        widget.model.addListener(_onChange, field: f);
-      }
-    } else {
-      widget.model.addListener(_onChange);
+  @override
+  void didUpdateWidget(covariant ReactiveBuilder<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.model != widget.model) {
+      _removeListeners(oldWidget.model);
+      _addListeners(widget.model);
     }
   }
 
   @override
   void dispose() {
-    if (widget.fields != null) {
-      for (final f in widget.fields!) {
-        widget.model.removeListener(_onChange, field: f);
-      }
-    } else {
-      widget.model.removeListener(_onChange);
-    }
+    _removeListeners(widget.model);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) => widget.builder(widget.model);
 }
+
+///Version 1.0.0
+// class _ReactiveBuilderState<T extends ReactiveModel>
+//     extends State<ReactiveBuilder<T>> {
+//   void _onChange() {
+//     if (!mounted) return;
+//     setState(() {});
+//   }
+//
+//   @override
+//   void initState() {
+//     super.initState();
+//
+//     if (widget.fields != null) {
+//       for (final f in widget.fields!) {
+//         widget.model.addListener(_onChange, field: f);
+//       }
+//     } else {
+//       widget.model.addListener(_onChange);
+//     }
+//   }
+//
+//   @override
+//   void dispose() {
+//     if (widget.fields != null) {
+//       for (final f in widget.fields!) {
+//         widget.model.removeListener(_onChange, field: f);
+//       }
+//     } else {
+//       widget.model.removeListener(_onChange);
+//     }
+//     super.dispose();
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) => widget.builder(widget.model);
+// }
 
 ///Version 0.0.9
 // import 'package:flutter/material.dart';

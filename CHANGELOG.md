@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 This project follows **Semantic Versioning**.
 
 ---
+
+## [1.0.1] - 2025-12-31
+### Added
+- Optional debug tracing in ReactiveModel with debugNotify flag for development.
+- Nested model propagation refined: addNested() now supports optional field to notify only relevant listeners.
+- Improved lifecycle handling: ReactiveBuilder and ReactiveSelector now handle model replacement safely.
+- ReactiveSelector rebuilds only when selected value changes (equality check).
+
+### Changed
+- ReactiveBuilder and ReactiveSelector listener management updated to avoid duplicate or unnecessary rebuilds.
+- Documentation updated to explain debug tracing and nested propagation options.
+- Examples revised to demonstrate new debug tracing and nested field propagation features.
+
+### Fixed
+- Prevented multiple rebuilds caused by nested model updates.
+- Fixed subtle bugs in ReactiveSelector when model or field changed.
+- Ensured ReactiveBuilder is lifecycle-safe and rebuilds correctly on model replacement.
+
+### Notes
+- Fully backward-compatible with previous v1.0.0 API.
+- Debug tracing is optional and disabled by default.
+- Nested propagation refinement allows field-aware rebuilds for large model graphs.
+
+---
+
 ## [1.0.0] - 2025-12-30
 ### Added
 - Official release: **Reactive Object–Relationship Model** (v1.0.0)

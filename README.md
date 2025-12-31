@@ -248,4 +248,3 @@ class Group extends ReactiveModel {
 | Ideal for              | Explicit reactive fields | ORM-style reactive objects |
 
 ---
-
