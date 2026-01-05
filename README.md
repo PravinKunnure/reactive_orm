@@ -8,6 +8,16 @@
 
 ---
 
+## What’s New in v1.1.2
+
+- **ReactiveList<T>**: reactive list state with automatic UI updates.
+- **ReactiveMap<K,V>**: reactive key–value collection state.
+- **watch() UI sugar**: ergonomic object-wise reactivity without boilerplate.
+- Internal package re-organization for better maintainability and extensibility.
+- Fully backward-compatible; no breaking changes.
+
+---
+
 ## 🎬 Demo
 
 ![Reactive_ORM Demo](https://raw.githubusercontent.com/PravinKunnure/reactive_orm/main/example/assets/reactive_orm_demo_.gif)
@@ -16,11 +26,11 @@
 
 ## ✨ Core Philosophy
 
-- Models are **plain Dart objects**
-- State changes happen via **normal field mutation**
-- UI reacts **automatically**, with optional field-specific reactivity
-- No `ChangeNotifier`, providers, streams, or extra boilerplate
-- Supports **object-wise**, **field-wise**, and **nested reactivity**
+- Models are **plain Dart objects**.
+- State changes happen via **normal field mutation**.
+- UI reacts **automatically**, with optional field-specific reactivity.
+- No `ChangeNotifier`, providers, streams, or extra boilerplate.
+- Supports **object-wise**, **field-wise**, and **nested reactivity**.
 - ORM-inspired design:
   - Objects represent application state
   - Relationships define propagation (Many → One, Many ↔ Many)
@@ -47,130 +57,165 @@
 
 ```yaml
 dependencies:
-  reactive_orm: <latest_version>
-
-
+  reactive_orm: ^1.1.2
 ```
+
 ## 🧩 Basic Usage
-1️⃣ Create a Reactive Model
-import 'package:reactive_orm/reactive_orm.dart';
+1️⃣ Create a Reactive Model:
 
-class Task extends ReactiveModel {
-  String _title;
-  bool _completed = false;
-  String _status = "Idle";
-
-  Task({required String title}) : _title = title;
-
-  String get title => _title;
-  set title(String value) {
-    if (_title != value) {
-      _title = value;
-      notifyListeners('title');
+    import 'package:reactive_orm/reactive_orm.dart';
+    
+    class Task extends ReactiveModel {
+      String _title;
+      bool _completed = false;
+      String _status = "Idle";
+    
+    Task({required String title}) : _title = title;
+    
+    String get title => _title;
+    set title(String value) {
+      if (_title != value) {
+        _title = value;
+        notifyListeners(#title); // ✅ Symbol, not String
+      }
     }
-  }
-
-  bool get completed => _completed;
-  set completed(bool value) {
-    if (_completed != value) {
-      _completed = value;
-      notifyListeners('completed');
+    
+    bool get completed => _completed;
+    set completed(bool value) {
+      if (_completed != value) {
+        _completed = value;
+        notifyListeners(#completed);
+      }
     }
-  }
-
-  String get status => _status;
-  set status(String value) {
-    if (_status != value) {
-      _status = value;
-      notifyListeners('status');
+    
+    String get status => _status;
+      set status(String value) {
+        if (_status != value) {
+          _status = value;
+          notifyListeners(#status);
+        }
+      }
     }
-  }
-}
 
-2️⃣ Object-wise Reactivity
-final task = Task(title: "Object-wise");
 
-ReactiveBuilder<Task>(
-  model: task,
-  builder: (t) => ListTile(
-    title: Text(t.title),
-    subtitle: Text(t.status),
-    trailing: Checkbox(
-      value: t.completed,
-      onChanged: (v) => t.completed = v!,
-    ),
-  ),
-);
+
+2️⃣ Object-wise Reactivity with watch()
+
+    final task = Task(title: "Object-wise");
+    
+    task.watch(
+        (t) => ListTile(
+            title: Text(t.title),
+            subtitle: Text(t.status),
+            trailing: Checkbox(
+            value: t.completed,
+            onChanged: (v) => t.completed = v!,
+        ),
+      ),
+    );
 
 3️⃣ Field-wise Reactivity
-final task = Task(title: "Field-wise");
 
-ReactiveBuilder<Task>(
-  model: task,
-  fields: ['completed', 'status'],
-  builder: (t) => ListTile(
-    title: Text(t.title),
-    subtitle: Text(t.status),
-    trailing: Checkbox(
-      value: t.completed,
-      onChanged: (v) => t.completed = v!,
+    final task = Task(title: "Field-wise");
+
+    ReactiveBuilder<Task>(
+    model: task,
+      fields: [#completed, #status], // ✅ Symbol-based
+        builder: (t) => ListTile(
+        title: Text(t.title),
+          subtitle: Text(t.status),
+          trailing: Checkbox(
+          value: t.completed,
+          onChanged: (v) => t.completed = v!,
+        ),
+      ),
+    );
+
+4️⃣ ReactiveList Example
+
+    final ReactiveList<String> fruits = ReactiveList(["Apple", "Banana"]); 
+
+    fruits.watch(
+    (list) => Column(
+    children: list.value.map((e) => Text(e)).toList(),
     ),
-  ),
-);
+    );
+
+    fruits.add("Orange"); // automatically rebuilds UI
+
+5️⃣ ReactiveMap Example
+
+    final ReactiveMap<String, int> scores = ReactiveMap({"A": 1, "B": 2});
+    
+      scores.watch(
+      (map) => Column(
+        children: map.value.entries
+          .map((e) => Text("${e.key} → ${e.value}"))
+          .toList(),
+        ),
+      );
+
+    scores.put("C", 3); // automatically rebuilds UI
+
 
 ## 🔗 Relationship Patterns
-Many → One (Aggregation)
-class Dashboard extends ReactiveModel {
-  final List<Task> sources;
-  Dashboard(this.sources) {
-    for (final task in sources) addNested(task);
-  }
-}
+- Many → One (Aggregation)
+    
+      class Dashboard extends ReactiveModel {
+          final List<Task> sources;
+          Dashboard(this.sources) {
+          for (final task in sources) addNested(task); }
+          }
 
-final dashboard = Dashboard([task1, task2]);
+        final dashboard = Dashboard([task1, task2]);
+        
+        ReactiveBuilder<Dashboard>(
+        model: dashboard,
+        builder: (_) => Text("Dashboard updated"),
+        );
 
-ReactiveBuilder<Dashboard>(
-  model: dashboard,
-  builder: (_) => Text("Dashboard updated"),
-);
+- Many ↔ Many (Shared Models)
 
-Many ↔ Many (Shared Models)
-class Group extends ReactiveModel {
-  final String name;
-  final List<Task> tasks;
 
-  Group({required this.name, required this.tasks}) {
-    for (final task in tasks) addNested(task);
-  }
-}
+    class Group extends ReactiveModel {
+    final String name;
+    final List<Task> tasks;
+    
+    Group({required this.name, required this.tasks}) {
+      for (final task in tasks) addNested(task);
+      }
+    }
+
 
 
 ## 🧠 How It Works
 - Models extend ReactiveModel.
-- Field setters call notifyListeners(fieldName) when the value changes.
+- Field setters call notifyListeners(#field) when the value changes.
 - ReactiveBuilder widgets listen to:
 - Whole model (object-wise)
 - Specific fields (field-wise)
-- Nested models propagate changes upward automatically.
-- Widgets rebuild safely, respecting Flutter lifecycle.
+- Nested models propagate changes upward automatically
+- Widgets rebuild safely, respecting Flutter lifecycle
 
 
-## 🛣 Roadmap
-- Batch updates / transactions
-- Async persistence hooks
-- Database adapters (optional)
-- DevTools / debug inspector
+## Roadmap (Planned)
+- Side-effect reactions (reaction, when, listen)
+- Lightweight computed helpers
+- Devtools & inspection utilities
 - Optional code generation
+- Advanced large-app architectural patterns
 
 
 ## 🧪 Status
-- Version: 1.0.0
+- Version: 1.1.2
 - Stability: Stable
 - Focus: Reactive domain models & scalable state management
 
 
 ## 📌 Summary
-`reactive_orm is ideal for:`
+
+`reactive_orm` is ideal for:
+
 - Clean Dart models with fine-grained reactivity
 - A Reactive Object–Relationship Model for UI state
 - Object-wise and field-wise rebuild control
@@ -178,73 +223,20 @@ class Group extends ReactiveModel {
 - Minimal boilerplate with a clear mental model
 - A lightweight yet scalable state management solution for Flutter apps
 
----
-## 🆚 Comparison
 
-| Feature                    | setState           | Redux                  | ValueNotifier         | Provider / ChangeNotifier | BLoC                  | Riverpod             | MobX                 | reactive_orm                   |
-|----------------------------|--------------------|------------------------|-----------------------|---------------------------|-----------------------|----------------------|----------------------|--------------------------------|
-| Plain Dart models          | ⚠️ Widget-bound    | ❌ Reducer-driven       | ⚠️ Wrapped value      | ❌ Extends notifier        | ❌ State classes       | ❌ Provider-based     | ⚠️ Annotated         | ✅ Plain Dart objects           |
-| Direct field mutation      | ⚠️ Inside widget   | ❌                      | ⚠️ `value = x`        | ❌                         | ❌                     | ❌                    | ⚠️ Observables       | ✅ `model.field = value`        |
-| Automatic UI updates       | ⚠️ Manual call     | ✅                      | ✅                     | ✅                         | ✅                     | ✅                    | ✅                    | ✅                              |
-| Field-wise reactivity      | ❌                  | ❌                      | ❌                     | ❌ Object-level            | ❌                     | ❌                    | ✅                    | ✅ Field-wise + object-wise     |
-| Multiple widgets listening | ❌                  | ✅                      | Manual wiring         | Manual wiring             | Stream subscriptions  | Provider wiring      | Automatic            | Automatic                      |
-| Nested models              | ❌                  | ❌                      | Manual                | ⚠️ Manual                 | ❌                     | ⚠️ Manual            | ⚠️ Manual            | ✅ Built-in                     |
-| Relationship support       | ❌                  | ❌                      | ❌                     | ❌                         | ❌                     | ❌                    | ❌                    | ✅ Many → One, Many ↔ Many      |
-| Boilerplate                | Very Low           | Very High              | Medium                | Medium                    | High                  | Medium               | Medium               | Minimal, ORM-style             |
-| Async-first design         | ❌                  | ⚠️ Middleware          | ❌                     | ⚠️ Optional               | ✅                     | ✅                    | ⚠️ Optional          | ❌                              |
-| Immutability required      | ❌                  | ✅                      | ❌                     | ❌                         | ✅                     | ✅                    | ❌                    | ❌                              |
-| Mental model               | Widget-local state | Global immutable store | Single reactive value | Observable objects        | Event → State streams | Immutable containers | Observable variables | Live object graph (ORM-style)  |
-| Ideal for                  | Tiny local state   | Large predictable apps | Simple values         | Small–medium apps         | Async-heavy logic     | Predictable state    | Explicit reactivity  | Complex reactive domain models |
+## 🆚 Comparison of State Management Approaches
 
-## In More Brief --------------
-### Provider vs reactive_orm
-| Feature                    | Provider / ChangeNotifier   | reactive_orm                   |
-|----------------------------|-----------------------------|--------------------------------|
-| Plain Dart models          | ❌ Extends `ChangeNotifier`  | ✅ Plain Dart objects           |
-| Field assignment syntax    | `setX(); notifyListeners()` | `model.field = newValue`       |
-| Automatic UI updates       | ✅                           | ✅                              |
-| Field-wise reactivity      | ❌ Object-level only         | ✅ Field-wise + object-wise     |
-| Multiple widgets listening | Manual provider wiring      | Automatic                      |
-| Nested models              | ⚠️ Manual propagation       | ✅ Built-in                     |
-| Relationships              | ❌                           | ✅ Many → One, Many ↔ Many      |
-| Boilerplate                | Medium                      | Minimal, ORM-style             |
-| Ideal for                  | Small–medium apps           | Complex reactive domain models |
+| Feature                    | setState           | Provider / ChangeNotifier | ValueNotifier          | BLoC                       | Riverpod                | MobX                 | reactive_orm                   |
+|----------------------------|--------------------|---------------------------|------------------------|----------------------------|-------------------------|----------------------|--------------------------------|
+| Plain Dart models          | ⚠️ Widget-bound    | ❌ Extends notifier        | ⚠️ Wrapped value       | ❌ State classes            | ❌ Immutable snapshots   | ⚠️ Annotated         | ✅ Plain Dart objects           |
+| Direct field mutation      | ⚠️ Inside widget   | ❌                         | ⚠️ `value = x`         | ❌                          | ❌                       | ⚠️ Observable        | ✅ `model.field = value`        |
+| Automatic UI updates       | ⚠️ Manual          | ✅                         | ✅                      | ✅                          | ✅                       | ✅                    | ✅                              |
+| Field-wise reactivity      | ❌                  | ❌                         | ❌                      | ❌                          | ❌                       | ✅                    | ✅ Field-wise + object-wise     |
+| Multiple widgets listening | ❌                  | Manual wiring             | Manual                 | Stream subscriptions       | Provider wiring         | Automatic            | Automatic                      |
+| Nested models              | ❌                  | ⚠️ Manual                 | Manual                 | ❌                          | ⚠️ Manual               | ⚠️ Manual            | ✅ Built-in                     |
+| Relationships              | ❌                  | ❌                         | ❌                      | ❌                          | ❌                       | ❌                    | ✅ Many → One / Many ↔ Many     |
+| Boilerplate                | Very Low           | Medium                    | Medium                 | High                       | Medium                  | Medium               | Minimal / ORM-style            |
+| Immutability required      | ❌                  | ❌                         | ❌                      | ✅                          | ✅                       | ⚠️ Optional          | ❌                              |
+| Mental model               | Widget-local state | Observable objects        | Single reactive value  | Event → State streams      | Immutable containers    | Observable variables | Live object graph (ORM-style)  |
+| Ideal for                  | Tiny local state   | Small–medium apps         | Simple reactive values | Async-heavy / event-driven | Predictable state       | Explicit reactivity  | Complex reactive domain models |
 
-### BLoC vs reactive_orm
-| Feature               | BLoC                     | reactive_orm              |
-|-----------------------|--------------------------|---------------------------|
-| State update style    | Events → Streams → State | Direct field mutation     |
-| Immutability          | Required                 | Optional / mutable        |
-| Boilerplate           | High                     | Minimal                   |
-| Field-wise reactivity | ❌                        | ✅                         |
-| Nested models         | ❌                        | ✅                         |
-| Relationships         | ❌                        | ✅ Many → One, Many ↔ Many |
-| Async-first design    | ✅                        | ❌                         |
-| Mental model          | Event-driven             | ORM-style object graph    |
-| Ideal for             | Complex async flows      | Domain-driven UI state    |
-
-### Riverpod vs reactive_orm
-| Feature               | Riverpod                   | reactive_orm              |
-|-----------------------|----------------------------|---------------------------|
-| State model           | Immutable snapshots        | Live mutable objects      |
-| Update syntax         | `state = state.copyWith()` | `model.field = newValue`  |
-| Field-wise reactivity | ❌                          | ✅                         |
-| Nested models         | ⚠️ Manual                  | ✅ Built-in                |
-| Relationships         | ❌                          | ✅ Many → One, Many ↔ Many |
-| Boilerplate           | Medium                     | Minimal                   |
-| Compile-time safety   | ✅ Strong                   | ⚠️ Runtime                |
-| Ideal for             | Predictable state flows    | Relational domain models  |
-
-### MobX vs reactive_orm
-| Feature                | MobX                     | reactive_orm               |
-|------------------------|--------------------------|----------------------------|
-| Reactivity declaration | Annotations + codegen    | Automatic                  |
-| Field-wise reactivity  | ✅                        | ✅                          |
-| Plain Dart models      | ⚠️ Annotated             | ✅ Plain Dart               |
-| Boilerplate            | Medium                   | Minimal                    |
-| Nested models          | ⚠️ Manual                | ✅ Built-in                 |
-| Relationships          | ❌                        | ✅ Many → One, Many ↔ Many  |
-| Tooling required       | Code generation          | None                       |
-| Ideal for              | Explicit reactive fields | ORM-style reactive objects |
-
----

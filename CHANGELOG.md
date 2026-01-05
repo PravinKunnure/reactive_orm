@@ -6,6 +6,25 @@ This project follows **Semantic Versioning**.
 
 ---
 
+
+## [1.1.2] - 2026-01-XX
+### Added
+- `ReactiveList<T>` for reactive list state with fine-grained update notifications.
+- `ReactiveMap<K, V>` for reactive key–value collections.
+- `watch()` UI sugar for ergonomic object-wise reactivity without boilerplate.
+- Optional UI-focused helpers built on top of existing `ReactiveBuilder`.
+
+### Changed
+- Internal package re-organization for better maintainability and extensibility.
+- Public API remains fully backward-compatible.
+- No changes to existing core behavior.
+
+### Notes
+- No breaking API changes.
+- All new features are additive and optional.
+- Core philosophy remains unchanged: **Reactive Object–Relationship Model**.
+
+
 ## [1.1.0] - 2026-01-XX
 ### Added
 - Reaction utilities for side effects (`reaction`, `when`, `listen`) without widget rebuilds.
