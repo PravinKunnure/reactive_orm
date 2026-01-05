@@ -3,12 +3,27 @@
 // --------------------------
 
 import 'package:flutter/material.dart';
+import 'package:reactive_orm/reactive_orm.dart';
+
+/// Reaction container for field or object-specific callbacks
+class _Reaction<T extends ReactiveModel> {
+  final List<Symbol>? fields; // null = listen to all fields
+  final void Function(T) callback;
+  final bool once;
+
+  _Reaction({this.fields, required this.callback, this.once = false});
+}
 
 typedef VoidCallback = void Function();
 
+/// Base ReactiveModel
 class ReactiveModel {
+  // ----------------------------
+  // Core fields
+  // ----------------------------
   final Map<Symbol, List<VoidCallback>> _fieldListeners = {};
   final List<ReactiveModel> _nestedModels = [];
+  final List<_Reaction> _reactions = [];
 
   bool _isBatching = false;
   final Set<Symbol> _batchedFields = {};
@@ -17,15 +32,20 @@ class ReactiveModel {
   /// Debug flag for development
   bool debugNotify = false;
 
-  /// ----------------------------
-  /// Add listener
-  /// ----------------------------
+  // ----------------------------
+  // Read-only getters for DevTools / Inspector
+  // ----------------------------
+  Map<Symbol, List<VoidCallback>> get fieldListeners =>
+      Map.unmodifiable(_fieldListeners);
+  List<ReactiveModel> get nestedModels => List.unmodifiable(_nestedModels);
+
+  // ----------------------------
+  // Add / Remove listeners
+  // ----------------------------
   void addListener(VoidCallback listener, {Symbol? field}) {
     final key = field ?? #*;
     final list = _fieldListeners.putIfAbsent(key, () => []);
-    if (!list.contains(listener)) {
-      list.add(listener);
-    }
+    if (!list.contains(listener)) list.add(listener);
   }
 
   void removeListener(VoidCallback listener, {Symbol? field}) {
@@ -33,9 +53,9 @@ class ReactiveModel {
     _fieldListeners[key]?.remove(listener);
   }
 
-  /// ----------------------------
-  /// Notify listeners
-  /// ----------------------------
+  // ----------------------------
+  // Notify listeners
+  // ----------------------------
   void notifyListeners([Symbol? field]) {
     if (_isBatching) {
       if (field != null) _batchedFields.add(field);
@@ -49,25 +69,31 @@ class ReactiveModel {
     final notified = <VoidCallback>{};
 
     // Field-specific listeners
-    final fieldListeners = List<VoidCallback>.from(
+    for (final l in List<VoidCallback>.from(
       _fieldListeners[field] ?? const [],
-    );
-    for (final l in fieldListeners) {
+    )) {
       if (notified.add(l)) l();
     }
 
     // Global listeners
-    final globalListeners = List<VoidCallback>.from(
-      _fieldListeners[#*] ?? const [],
-    );
-    for (final l in globalListeners) {
+    for (final l in List<VoidCallback>.from(_fieldListeners[#*] ?? const [])) {
       if (notified.add(l)) l();
     }
+
+    // Run reactions
+    final toRemove = <_Reaction>[];
+    for (final r in _reactions) {
+      if (r.fields == null || (field != null && r.fields!.contains(field))) {
+        r.callback(this);
+        if (r.once) toRemove.add(r);
+      }
+    }
+    _reactions.removeWhere((r) => toRemove.contains(r));
   }
 
-  /// ----------------------------
-  /// Nested models
-  /// ----------------------------
+  // ----------------------------
+  // Nested models
+  // ----------------------------
   void addNested(ReactiveModel nested, {Symbol? field}) {
     if (_nestedModels.contains(nested)) return;
     _nestedModels.add(nested);
@@ -82,9 +108,14 @@ class ReactiveModel {
     });
   }
 
-  /// ----------------------------
-  /// Batch updates
-  /// ----------------------------
+  void removeNested(ReactiveModel nested) {
+    if (!_nestedModels.contains(nested)) return;
+    _nestedModels.remove(nested);
+  }
+
+  // ----------------------------
+  // Batch updates
+  // ----------------------------
   void batch(VoidCallback fn) {
     _isBatching = true;
     try {
@@ -98,9 +129,9 @@ class ReactiveModel {
     }
   }
 
-  /// ----------------------------
-  /// Dispose
-  /// ----------------------------
+  // ----------------------------
+  // Dispose
+  // ----------------------------
   void dispose() {
     if (_disposed) return;
     _disposed = true;
@@ -113,13 +144,8 @@ class ReactiveModel {
   }
 
   // ----------------------------
-  // Optional hooks for v1.1.0
+  // Reactions / Hooks
   // ----------------------------
-
-  void listen(VoidCallback callback, {Symbol? field}) {
-    addListener(callback, field: field);
-  }
-
   void once(VoidCallback callback, {Symbol? field}) {
     void wrapper() {
       removeListener(wrapper, field: field);
@@ -129,32 +155,355 @@ class ReactiveModel {
     addListener(wrapper, field: field);
   }
 
-  void reaction<V>(V Function() selector, void Function(V value) callback) {
+  void reaction<V>(
+    V Function() selector,
+    void Function(V value) callback, {
+    List<Symbol>? fields,
+  }) {
     V? lastValue;
-    void listener() {
-      final newValue = selector();
-      if (lastValue != newValue) {
-        lastValue = newValue;
-        callback(newValue);
-      }
-    }
-
-    addListener(listener);
-    listener(); // initial call
+    final r = _Reaction(
+      fields: fields,
+      once: false,
+      callback: (ReactiveModel _) {
+        final newValue = selector();
+        if (lastValue != newValue) {
+          lastValue = newValue;
+          callback(newValue);
+        }
+      },
+    );
+    _reactions.add(r);
+    r.callback(this); // initial run
   }
 
-  void when(bool Function() condition, VoidCallback callback) {
-    void listener() {
-      if (condition()) {
-        removeListener(listener);
-        callback();
-      }
-    }
+  void when(
+    bool Function() condition,
+    VoidCallback callback, {
+    List<Symbol>? fields,
+  }) {
+    final r = _Reaction(
+      fields: fields,
+      once: true,
+      callback: (_) {
+        if (condition()) callback();
+      },
+    );
+    _reactions.add(r);
+    r.callback(this); // check immediately
+  }
 
-    addListener(listener);
-    listener();
+  void listen({
+    List<Symbol>? fields,
+    required void Function(ReactiveModel) callback,
+  }) {
+    _reactions.add(_Reaction(fields: fields, callback: callback, once: false));
+  }
+
+  // ----------------------------
+  // ----------------------------
+  // v1.2.x Relationship helpers
+  // ----------------------------
+  /// Many → One
+  void addRelation(ReactiveModel child, {Symbol? field}) =>
+      addNested(child, field: field);
+
+  void removeRelation(ReactiveModel child) => removeNested(child);
+
+  /// Many ↔ Many helper
+  void shareRelation(ReactiveModel other, {Symbol? field}) {
+    addNested(other, field: field);
+    other.addNested(this, field: field);
+  }
+
+  void unshareRelation(ReactiveModel other) {
+    removeNested(other);
+    other.removeNested(this);
   }
 }
+
+/// ----------------------------
+/// v1.2.x Watch helpers (field/computed)
+/// ----------------------------
+extension ReactiveWatchHelpers on ReactiveModel {
+  /// Watch a specific field
+  Widget watchField(Symbol field, Widget Function() builder) {
+    return ReactiveBuilder<ReactiveModel>(
+      model: this,
+      fields: [field],
+      builder: (_) => builder(),
+    );
+  }
+
+  /// Watch a computed value
+  Widget watchComputed<T>(
+    T Function() compute,
+    Widget Function(T value) builder,
+  ) {
+    T cachedValue = compute();
+    return ReactiveBuilder<ReactiveModel>(
+      model: this,
+      builder: (_) {
+        final newValue = compute();
+        if (cachedValue != newValue) cachedValue = newValue;
+        return builder(cachedValue);
+      },
+    );
+  }
+}
+
+///Version 1.1.2
+// // --------------------------
+// // reactive_model.dart
+// // --------------------------
+//
+// import 'package:flutter/material.dart';
+//
+// class _Reaction<T extends ReactiveModel> {
+//   final List<Symbol>? fields; // null = listen to all fields
+//   final void Function(T) callback;
+//   final bool once;
+//   //dynamic _lastValue;
+//
+//   _Reaction({this.fields, required this.callback, this.once = false});
+// }
+//
+//
+//
+// typedef VoidCallback = void Function();
+//
+// class ReactiveModel {
+//   final Map<Symbol, List<VoidCallback>> _fieldListeners = {};
+//   final List<ReactiveModel> _nestedModels = [];
+//   final List<_Reaction> _reactions = [];
+//
+//   bool _isBatching = false;
+//   final Set<Symbol> _batchedFields = {};
+//   bool _disposed = false;
+//
+//   /// Debug flag for development
+//   bool debugNotify = false;
+//
+//   /// ----------------------------
+//   /// Add listener
+//   /// ----------------------------
+//   void addListener(VoidCallback listener, {Symbol? field}) {
+//     final key = field ?? #*;
+//     final list = _fieldListeners.putIfAbsent(key, () => []);
+//     if (!list.contains(listener)) {
+//       list.add(listener);
+//     }
+//   }
+//
+//   void removeListener(VoidCallback listener, {Symbol? field}) {
+//     final key = field ?? #*;
+//     _fieldListeners[key]?.remove(listener);
+//   }
+//
+//   /// ----------------------------
+//   /// Notify listeners
+//   /// ----------------------------
+//   // void notifyListeners([Symbol? field]) {
+//   //   if (_isBatching) {
+//   //     if (field != null) _batchedFields.add(field);
+//   //     return;
+//   //   }
+//   //
+//   //   if (debugNotify) {
+//   //     debugPrint('ReactiveModel($runtimeType) notify: $field');
+//   //   }
+//   //
+//   //   final notified = <VoidCallback>{};
+//   //
+//   //   // Field-specific listeners
+//   //   final fieldListeners = List<VoidCallback>.from(
+//   //     _fieldListeners[field] ?? const [],
+//   //   );
+//   //   for (final l in fieldListeners) {
+//   //     if (notified.add(l)) l();
+//   //   }
+//   //
+//   //   // Global listeners
+//   //   final globalListeners = List<VoidCallback>.from(
+//   //     _fieldListeners[#*] ?? const [],
+//   //   );
+//   //   for (final l in globalListeners) {
+//   //     if (notified.add(l)) l();
+//   //   }
+//   // }
+//
+//   void notifyListeners([Symbol? field]) {
+//     if (_isBatching) {
+//       if (field != null) _batchedFields.add(field);
+//       return;
+//     }
+//
+//     if (debugNotify) {
+//       debugPrint('ReactiveModel($runtimeType) notify: $field');
+//     }
+//
+//     final notified = <VoidCallback>{};
+//
+//     // Field-specific listeners
+//     final fieldListeners = List<VoidCallback>.from(
+//       _fieldListeners[field] ?? const [],
+//     );
+//     for (final l in fieldListeners) {
+//       if (notified.add(l)) l();
+//     }
+//
+//     // Global listeners
+//     final globalListeners = List<VoidCallback>.from(
+//       _fieldListeners[#*] ?? const [],
+//     );
+//     for (final l in globalListeners) {
+//       if (notified.add(l)) l();
+//     }
+//
+//     // ------------------------
+//     // Run reactions
+//     // ------------------------
+//     final toRemove = <_Reaction>[];
+//     for (final r in _reactions) {
+//       // If fields is null, run always; else check if field is included
+//       if (r.fields == null || (field != null && r.fields!.contains(field))) {
+//         r.callback(this);
+//         if (r.once) toRemove.add(r);
+//       }
+//     }
+//     _reactions.removeWhere((r) => toRemove.contains(r));
+//   }
+//
+//
+//   /// ----------------------------
+//   /// Nested models
+//   /// ----------------------------
+//   void addNested(ReactiveModel nested, {Symbol? field}) {
+//     if (_nestedModels.contains(nested)) return;
+//     _nestedModels.add(nested);
+//
+//     nested.addListener(() {
+//       if (debugNotify) {
+//         debugPrint(
+//           'Nested change: ${nested.runtimeType} -> ${field ?? #nested}',
+//         );
+//       }
+//       notifyListeners(field ?? #nested);
+//     });
+//   }
+//
+//   /// ----------------------------
+//   /// Batch updates
+//   /// ----------------------------
+//   void batch(VoidCallback fn) {
+//     _isBatching = true;
+//     try {
+//       fn();
+//     } finally {
+//       _isBatching = false;
+//       for (final field in _batchedFields) {
+//         notifyListeners(field);
+//       }
+//       _batchedFields.clear();
+//     }
+//   }
+//
+//   /// ----------------------------
+//   /// Dispose
+//   /// ----------------------------
+//   void dispose() {
+//     if (_disposed) return;
+//     _disposed = true;
+//
+//     _fieldListeners.clear();
+//     for (final nested in _nestedModels) {
+//       nested.dispose();
+//     }
+//     _nestedModels.clear();
+//   }
+//
+//   // ----------------------------
+//   // Optional hooks for v1.1.0
+//   // ----------------------------
+//
+//   // void listen(VoidCallback callback, {Symbol? field}) {
+//   //   addListener(callback, field: field);
+//   // }
+//
+//   void once(VoidCallback callback, {Symbol? field}) {
+//     void wrapper() {
+//       removeListener(wrapper, field: field);
+//       callback();
+//     }
+//
+//     addListener(wrapper, field: field);
+//   }
+//
+//   // void reaction<V>(V Function() selector, void Function(V value) callback) {
+//   //   V? lastValue;
+//   //   void listener() {
+//   //     final newValue = selector();
+//   //     if (lastValue != newValue) {
+//   //       lastValue = newValue;
+//   //       callback(newValue);
+//   //     }
+//   //   }
+//   //
+//   //   addListener(listener);
+//   //   listener(); // initial call
+//   // }
+//   //
+//   // void when(bool Function() condition, VoidCallback callback) {
+//   //   void listener() {
+//   //     if (condition()) {
+//   //       removeListener(listener);
+//   //       callback();
+//   //     }
+//   //   }
+//   //
+//   //   addListener(listener);
+//   //   listener();
+//   // }
+//
+//   void reaction<V>(
+//       V Function() selector,
+//       void Function(V value) callback, {
+//         List<Symbol>? fields,
+//       }) {
+//     V? lastValue;
+//     final r = _Reaction(
+//       fields: fields,
+//       once: false,
+//       callback: (ReactiveModel _) {
+//         final newValue = selector();
+//         if (lastValue != newValue) {
+//           lastValue = newValue;
+//           callback(newValue);
+//         }
+//       },
+//     );
+//     _reactions.add(r);
+//     r.callback(this); // initial run
+//   }
+//
+//   void when(bool Function() condition, VoidCallback callback, {List<Symbol>? fields}) {
+//     final r = _Reaction(
+//       fields: fields,
+//       once: true,
+//       callback: (_) {
+//         if (condition()) {
+//           callback();
+//         }
+//       },
+//     );
+//     _reactions.add(r);
+//     r.callback(this); // check immediately
+//   }
+//
+//   void listen({List<Symbol>? fields, required void Function(ReactiveModel) callback}) {
+//     _reactions.add(_Reaction(fields: fields, callback: callback, once: false));
+//   }
+//
+// }
 
 ///Version 1.0.1
 // // --------------------------

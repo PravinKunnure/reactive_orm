@@ -6,8 +6,24 @@ This project follows **Semantic Versioning**.
 
 ---
 
+## [1.2.0] – Stable
+### Added
+- watchField() UI helper
+- watchComputed() UI helper
+- ReactiveMap<K, V>
+- Relationship helper utilities
+- Debug inspection hooks
+- Internal package re-organization
 
-## [1.1.2] - 2026-01-XX
+### Changed
+- Improved ergonomics for field and computed reactivity
+
+### Fixed
+- Listener deduplication issues
+- Safer nested model propagation
+
+
+## [1.1.2] - 2026-01-05
 ### Added
 - `ReactiveList<T>` for reactive list state with fine-grained update notifications.
 - `ReactiveMap<K, V>` for reactive key–value collections.

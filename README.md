@@ -8,13 +8,16 @@
 
 ---
 
-## What’s New in v1.1.2
+## What’s New in v1.2.0
 
-- **ReactiveList<T>**: reactive list state with automatic UI updates.
-- **ReactiveMap<K,V>**: reactive key–value collection state.
-- **watch() UI sugar**: ergonomic object-wise reactivity without boilerplate.
-- Internal package re-organization for better maintainability and extensibility.
-- Fully backward-compatible; no breaking changes.
+- **watchField()**: field-level UI reactivity without `ReactiveBuilder`.
+- **watchComputed()**: rebuild UI based on derived / computed values.
+- **ReactiveMap<K, V>**: reactive key–value collections.
+- **Relationship helpers**: helpers for Many → One and Many ↔ Many model wiring.
+- **Debug inspection support**: introspect listeners, nested models, and rebuilds.
+- Internal folder re-organization for long-term extensibility.
+- Fully backward-compatible with v1.1.x.
+
 
 ---
 
@@ -38,16 +41,19 @@
 
 ---
 
-## ✨ Features
 
+## ✨ Features
 - ✅ Reactive models with automatic UI updates
-- ✅ Object-wise reactivity (entire model rebuilds)
-- ✅ Field-wise reactivity (only selected fields rebuild)
-- ✅ Nested & shared models supported
+- ✅ Object-wise reactivity (`watch`)
+- ✅ Field-wise reactivity (`watchField`)
+- ✅ Computed reactivity (`watchComputed`)
+- ✅ ReactiveList & ReactiveMap collections
+- ✅ Nested & shared models
 - ✅ Many → One and Many ↔ Many relationships
-- ✅ Multiple widgets can listen to the same model
-- ✅ Minimal boilerplate
-- ✅ ORM-style mental model (Objects + Relationships)
+- ✅ Debug inspection support
+- ✅ Minimal boilerplate, no codegen required
+- ✅ ORM-style object graph mental model
+
 
 ---
 
@@ -57,7 +63,7 @@
 
 ```yaml
 dependencies:
-  reactive_orm: ^1.1.2
+  reactive_orm: <latest_one>
 ```
 
 ## 🧩 Basic Usage
@@ -198,18 +204,16 @@ dependencies:
 - Widgets rebuild safely, respecting Flutter lifecycle
 
 
-## Roadmap (Planned)
-- Side-effect reactions (reaction, when, listen)
-- Lightweight computed helpers
-- Devtools & inspection utilities
-- Optional code generation
-- Advanced large-app architectural patterns
+## Roadmap
 
+### v1.3.x (Experimental)
+- Annotation-based metadata
+- Optional code generation (models & relationships)
+- Compile-time safety for fields & relations
 
-## 🧪 Status
-- Version: 1.1.2
-- Stability: Stable
-- Focus: Reactive domain models & scalable state management
+### v1.4.x
+- Advanced DevTools (graph visualization, rebuild tracing)
+- Performance profiling helpers
 
 
 ## 📌 Summary
