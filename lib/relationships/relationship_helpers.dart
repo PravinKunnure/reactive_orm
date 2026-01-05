@@ -74,9 +74,9 @@ void removeManyToMany(
 /// ----------------------------
 /// Optional Mixin for child tracking
 /// ----------------------------
-mixin _HasParent on ReactiveModel {
-  final Set<ReactiveModel> _parents = {};
-
-  /// Get all parents
-  List<ReactiveModel> get parents => List.unmodifiable(_parents);
-}
+// mixin _HasParent on ReactiveModel {
+//   final Set<ReactiveModel> _parents = {};
+//
+//   /// Get all parents
+//   List<ReactiveModel> get parents => List.unmodifiable(_parents);
+// }
