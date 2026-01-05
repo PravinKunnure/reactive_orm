@@ -15,7 +15,7 @@ void addManyToOne(
   parent.addNested(child, field: field);
 
   // Optional: store a weak link to parent in child
-  if (child is _HasParent) {
+  if (child is HasParent) {
     child._parents.add(parent);
   }
 
@@ -31,7 +31,7 @@ void removeFromParent(
   Symbol? field,
 }) {
   parent.nestedModels.remove(child);
-  if (child is _HasParent) {
+  if (child is HasParent) {
     child._parents.remove(parent);
   }
   parent.notifyListeners(field);
@@ -49,7 +49,7 @@ void addManyToMany(
     owner.addNested(child, field: field);
 
     // Optional: track owner in child
-    if (child is _HasParent) {
+    if (child is HasParent) {
       child._parents.add(owner);
     }
   }
@@ -66,7 +66,7 @@ void removeManyToMany(
 }) {
   for (final child in sharedChildren) {
     owner.nestedModels.remove(child);
-    if (child is _HasParent) child._parents.remove(owner);
+    if (child is HasParent) child._parents.remove(owner);
   }
   owner.notifyListeners(field);
 }
@@ -74,9 +74,9 @@ void removeManyToMany(
 /// ----------------------------
 /// Optional Mixin for child tracking
 /// ----------------------------
-// mixin _HasParent on ReactiveModel {
-//   final Set<ReactiveModel> _parents = {};
-//
-//   /// Get all parents
-//   List<ReactiveModel> get parents => List.unmodifiable(_parents);
-// }
+mixin HasParent on ReactiveModel {
+  final Set<ReactiveModel> _parents = {};
+
+  /// Get all parents
+  List<ReactiveModel> get parents => List.unmodifiable(_parents);
+}
