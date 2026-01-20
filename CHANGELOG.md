@@ -6,6 +6,20 @@ This project follows **Semantic Versioning**.
 
 ---
 
+## [1.2.1] – 2026-01-20
+### Deprecated
+- `reactive_orm` is officially deprecated and no longer maintained.
+- Users are **strongly encouraged to migrate** to the new package: [`livo`](https://pub.dev/packages/livo)
+
+### Notes
+- No new features or bug fixes are included in this version.
+- All existing functionality from v1.2.0 remains intact.
+- README and documentation updated to indicate deprecation and migration path.
+- Backward compatibility with v1.2.0 ensured.
+
+---
+
+
 ## [1.2.0] – Stable
 ### Added
 - watchField() UI helper

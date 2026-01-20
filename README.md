@@ -1,48 +1,67 @@
-# reactive_orm
+# ⚠️ Deprecated – Moved to `livo`
 
-[![Pub Version](https://img.shields.io/pub/v/reactive_orm)](https://pub.dev/packages/reactive_orm) | [![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://opensource.org/licenses/MIT)
-
-> ⚠️ **Note:** `reactive_orm` stands for a **Reactive Object–Relationship Model**.  
-> It is **not a database ORM**.  
-> It is a lightweight, field-level **state management solution** for Flutter UI, inspired by ORM-style modeling of objects and relationships — fully in-memory and UI-focused.
+> **`reactive_orm` is now deprecated and no longer under active development.**
+>
+> The project has evolved and continues under a new name:
+>
+> 👉 **[`livo`](https://pub.dev/packages/livo)**
+>
+> `livo` is the **direct successor** of `reactive_orm`, offering:
+> - Clearer conceptual naming
+> - Improved documentation
+> - Long-term roadmap and ecosystem focus
+>
+> ✅ Existing `reactive_orm` apps will continue to work  
+> 🚀 **New projects should use `livo`**
 
 ---
 
-## What’s New in v1.2.0
+# reactive_orm
 
-- **watchField()**: field-level UI reactivity without `ReactiveBuilder`.
-- **watchComputed()**: rebuild UI based on derived / computed values.
-- **ReactiveMap<K, V>**: reactive key–value collections.
-- **Relationship helpers**: helpers for Many → One and Many ↔ Many model wiring.
-- **Debug inspection support**: introspect listeners, nested models, and rebuilds.
-- Internal folder re-organization for long-term extensibility.
-- Fully backward-compatible with v1.1.x.
+[![Pub Version](https://img.shields.io/pub/v/reactive_orm)](https://pub.dev/packages/reactive_orm)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://opensource.org/licenses/MIT)
 
+> ⚠️ **Note:** `reactive_orm` stands for a  
+> **Reactive Object–Relationship Model for Flutter UI state**.
+>
+> It is **not a database ORM**.
+>
+> This concept is now fully evolved and actively maintained as  
+> 👉 **[`livo`](https://pub.dev/packages/livo)**.
+
+---
+
+## 📢 Project Status
+
+- 🧊 **Frozen** (no new features planned)
+- 🛠 Critical bug fixes only (if required)
+- 🔁 Recommended migration path: **`livo`**
 
 ---
 
 ## 🎬 Demo
 
-![Reactive_ORM Demo](https://raw.githubusercontent.com/PravinKunnure/reactive_orm/main/example/assets/reactive_orm_demo_.gif)
+![Reactive ORM Demo](https://raw.githubusercontent.com/PravinKunnure/reactive_orm/main/example/assets/reactive_orm_demo_.gif)
 
 ---
 
 ## ✨ Core Philosophy
 
-- Models are **plain Dart objects**.
-- State changes happen via **normal field mutation**.
-- UI reacts **automatically**, with optional field-specific reactivity.
-- No `ChangeNotifier`, providers, streams, or extra boilerplate.
-- Supports **object-wise**, **field-wise**, and **nested reactivity**.
-- ORM-inspired design:
+- Models are **plain Dart objects**
+- State changes happen via **normal field mutation**
+- UI reacts **automatically**
+- Optional **field-level reactivity**
+- No `ChangeNotifier`, Providers, Streams, or codegen
+- Fully **in-memory**, **UI-focused**
+- ORM-inspired mental model:
   - Objects represent application state
-  - Relationships define propagation (Many → One, Many ↔ Many)
-  - Reactivity keeps the UI in sync
+  - Relationships define propagation
+  - Reactivity keeps UI in sync
 
 ---
 
-
 ## ✨ Features
+
 - ✅ Reactive models with automatic UI updates
 - ✅ Object-wise reactivity (`watch`)
 - ✅ Field-wise reactivity (`watchField`)
@@ -51,9 +70,8 @@
 - ✅ Nested & shared models
 - ✅ Many → One and Many ↔ Many relationships
 - ✅ Debug inspection support
-- ✅ Minimal boilerplate, no codegen required
+- ✅ Minimal boilerplate
 - ✅ ORM-style object graph mental model
-
 
 ---
 
@@ -63,7 +81,8 @@
 
 ```yaml
 dependencies:
-  reactive_orm: <latest_one>
+  reactive_orm: <latest>
+
 ```
 
 ## 🧩 Basic Usage
